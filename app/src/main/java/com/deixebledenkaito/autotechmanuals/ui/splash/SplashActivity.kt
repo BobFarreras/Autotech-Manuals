@@ -29,6 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
 import com.deixebledenkaito.autotechmanuals.ui.home.HomeActivity
+
 import com.deixebledenkaito.autotechmanuals.ui.login.LoginActivity
 
 import dagger.hilt.android.AndroidEntryPoint
