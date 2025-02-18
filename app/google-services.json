@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1028476891201",
+    "project_id": "autotechmanual",
+    "storage_bucket": "autotechmanual.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1028476891201:android:49dee4c3c64de74b3816c0",
+        "android_client_info": {
+          "package_name": "com.deixebledenkaito.autotechmanuals"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAn53PyJNGPY7aOJ6rcZhQJUSFhUVDkRbI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
