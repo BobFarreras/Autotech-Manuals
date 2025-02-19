@@ -9,7 +9,9 @@ junitVersion = "1.2.1"
 espressoCore = "3.6.1"
 lifecycleRuntimeKtx = "2.8.7"
 activityCompose = "1.10.0"
-composeBom = "2024.04.01"
+composeBom = "2025.02.00"
+
+
 services = "4.4.2"
 hilt = "2.52"
 
@@ -54,6 +56,7 @@ androidx-datastore-preferences = { module = "androidx.datastore:datastore-prefer
 #HILT
 hilt-android = {module = "com.google.dagger:hilt-android", version.ref = "hilt"}
 hilt-compiler = {module = "com.google.dagger:hilt-compiler", version.ref = "hilt"}
+
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

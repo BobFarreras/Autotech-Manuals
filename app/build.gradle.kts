@@ -84,4 +84,12 @@ dependencies {
     implementation (libs.androidx.hilt.navigation.compose)
     // COIL ES PER IMPLEMENTAR IMATGES EN COMPOSE
     implementation(libs.coil.compose)
+
+    implementation ("androidx.compose.ui:ui:1.4.0")
+    implementation ("io.coil-kt:coil-compose:2.2.2") // Per carregar imatges des de URLs
+    implementation ("androidx.activity:activity-compose:1.7.0")
+    implementation ("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.1")
+
+
+
 }

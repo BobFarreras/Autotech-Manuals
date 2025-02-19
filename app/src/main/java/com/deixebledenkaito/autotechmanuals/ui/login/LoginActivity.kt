@@ -6,16 +6,21 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import coil.compose.rememberImagePainter
+import com.deixebledenkaito.autotechmanuals.R
 import com.deixebledenkaito.autotechmanuals.ui.home.HomeActivity
 import com.deixebledenkaito.autotechmanuals.ui.signup.SignupActivity
 import com.google.firebase.FirebaseException
@@ -56,8 +61,17 @@ fun LoginScreen(loginViewModel: LoginViewModel) {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        // Imatge del logo centrada a la part superior
+        Image(
+            painter = rememberImagePainter(R.drawable.logo_v1),
+            contentDescription = "Logo",
+            modifier = Modifier.size(100.dp).align(Alignment.CenterHorizontally)
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
         // Camp d'usuari
-        var user by remember { mutableStateOf("") }
+        var user by remember { mutableStateOf("matutano8@gmail.com") }
         TextField(
             value = user,
             onValueChange = { user = it },
@@ -68,7 +82,7 @@ fun LoginScreen(loginViewModel: LoginViewModel) {
         Spacer(modifier = Modifier.height(16.dp))
 
         // Camp de contrasenya
-        var password by remember { mutableStateOf("") }
+        var password by remember { mutableStateOf("123456") }
         TextField(
             value = password,
             onValueChange = { password = it },
@@ -79,6 +93,20 @@ fun LoginScreen(loginViewModel: LoginViewModel) {
         )
 
         Spacer(modifier = Modifier.height(16.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.End
+        ) {
+            // Enllaç per registrar-se alineat a la dreta
+            TextButton(
+                onClick = {
+                    context.startActivity(Intent(context, SignupActivity::class.java))
+                }
+            ) {
+                Text("Registra't")
+            }
+        }
 
         // Botó d'inici de sessió
         Button(
@@ -94,17 +122,6 @@ fun LoginScreen(loginViewModel: LoginViewModel) {
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Enllaç per registrar-se
-        TextButton(
-            onClick = {
-                context.startActivity(Intent(context, SignupActivity::class.java))
-            }
-        ) {
-            Text("Registra't")
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
         if (showPhoneDialog) {
             PhoneLoginDialog(
                 loginViewModel = loginViewModel,
@@ -112,10 +129,17 @@ fun LoginScreen(loginViewModel: LoginViewModel) {
             )
         }
 
+        // Botó d'inici de sessió amb telèfon amb icona de mòbil
         Button(
             onClick = { showPhoneDialog = true },
             modifier = Modifier.fillMaxWidth()
         ) {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_movil),
+                contentDescription = "Phone Icon",
+                modifier = Modifier.size(24.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
             Text("Iniciar sessió amb telèfon")
         }
 
@@ -125,6 +149,9 @@ fun LoginScreen(loginViewModel: LoginViewModel) {
         }
     }
 }
+
+
+
 
 @Composable
 fun PhoneLoginDialog(

@@ -1,11 +1,10 @@
 package com.deixebledenkaito.autotechmanuals.ui.login
 
-import android.content.Context
+
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.deixebledenkaito.autotechmanuals.data.network.auth.AuthService
-import com.google.firebase.FirebaseException
-import com.google.firebase.auth.PhoneAuthCredential
+
 import com.google.firebase.auth.PhoneAuthProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
