@@ -1,11 +1,8 @@
 package com.deixebledenkaito.autotechmanuals.domain
-
 // Model de dades per a un manual
-data class Manuals(
+data class Model(
     val id: String,
     val nom: String,
     val descripcio: String,
-    val imageUrl: String,
-    val usageCount: Long
-
+    val imageUrl: String
 )

@@ -5,17 +5,21 @@ import com.deixebledenkaito.autotechmanuals.domain.Manuals
 
 // Resposta de Firestore per a un manual
 data class ManualResponse(
-    val id: String ="",
-    val nom: String="",
-    val descripcio: String="",
-    val imageUrl: String=""
+    var id: String ="",
+    var nom: String="",
+    var descripcio: String="",
+    var imageUrl: String="",
+    var usageCount: Long = 0
+
 ) {
     fun toDomain(): Manuals{
         return Manuals(
-            id= id,
+            id = id,
             nom = nom,
             descripcio = descripcio,
-            imageUrl = imageUrl
+            imageUrl = imageUrl,
+            usageCount = usageCount
+
         )
     }
 }

@@ -1,19 +1,31 @@
 package com.deixebledenkaito.autotechmanuals.ui.home
 
+
 import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
+
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.viewmodel.compose.viewModel
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
+
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ExitToApp
@@ -26,73 +38,89 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
+
+import androidx.navigation.NavController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberImagePainter
 
 import com.deixebledenkaito.autotechmanuals.domain.Manuals
+import com.deixebledenkaito.autotechmanuals.ui.homeManuals.HomeManualScreen
+import com.deixebledenkaito.autotechmanuals.ui.login.LoginScreen
+import com.deixebledenkaito.autotechmanuals.ui.login.LoginViewModel
+
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class HomeActivity : ComponentActivity() {
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
 
-            val viewModel: HomeViewModel = viewModel()
-            HomeScreen(viewModel)
+            AppNavigation()
+
+
 
         }
     }
 }
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(viewModel: HomeViewModel) {
-    // Observa l'estat dels manuals, els manuals més populars i l'últim manual
+fun HomeScreen(viewModel: HomeViewModel, navController: NavController) {
     val manuals by viewModel.manuals.collectAsState()
     val topManuals by viewModel.topManuals.collectAsState()
     val lastManual by viewModel.lastManual.collectAsState()
     val user by viewModel.user.collectAsState()
 
     var showAddManualDialog by remember { mutableStateOf(false) }
-    // Carrega les dades quan la pantalla es mostra per primera vegada
+
     LaunchedEffect(Unit) {
-        viewModel.loadManuals() // Carrega tots els manuals
-        viewModel.loadTopManuals() // Carrega els manuals més populars
-        viewModel.loadLastManual() // Carrega l'últim manual afegit
-        viewModel.loadUser() // Carrega les dades de l'usuari
+        viewModel.loadManuals()
+        viewModel.loadTopManuals()
+        viewModel.loadLastManual()
+        viewModel.loadUser()
     }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Benvingut, ${user?: "Usuari"}") },
+                title = { Text("Benvingut, ${user?.name ?: "Usuari"}") },
                 actions = {
-                    IconButton(onClick = { viewModel.addManual(
-                        nom = TODO(),
-                        descripcio = TODO(),
-                        imageUri = TODO()
-                    ) }) {
+                    IconButton(onClick = { showAddManualDialog = true }) {
                         Icon(Icons.Default.Add, contentDescription = "Afegir manual")
                     }
-                    IconButton(onClick = { viewModel.logout() }) {
+                    IconButton(onClick = {
+                        viewModel.logout {
+                            navController.navigate("login") {
+                                popUpTo("home") { inclusive = true }
+                            }
+                        }
+                    }) {
                         Icon(Icons.Default.ExitToApp, contentDescription = "Tancar sessió")
                     }
                 }
             )
         }
-    ){ paddingValues ->
+    ) { paddingValues ->
         Column(
             modifier = Modifier
                 .padding(paddingValues)
-                .padding(16.dp)
+                .verticalScroll(rememberScrollState()) // Permet el scroll a tota la pantalla
+                .padding(8.dp)
         ) {
             // Últim manual utilitzat
             lastManual?.let { manual ->
                 Text("Últim manual utilitzat", style = MaterialTheme.typography.titleMedium)
                 Spacer(modifier = Modifier.height(8.dp))
-                ManualItem(manual = manual)
+                ManualItem(manual = manual, onClick = {
+                    navController.navigate("homeManual/${manual.nom}") // Navegació amb argument
+                })
                 Spacer(modifier = Modifier.height(16.dp))
             }
 
@@ -101,23 +129,38 @@ fun HomeScreen(viewModel: HomeViewModel) {
             Spacer(modifier = Modifier.height(8.dp))
             LazyRow {
                 items(topManuals) { manual ->
-                    ManualItem(manual = manual, modifier = Modifier.width(200.dp))
+                    ManualItem(manual = manual,modifier = Modifier.width(200.dp), onClick = {
+                        navController.navigate("homeManual/${manual.nom}") // Navegació amb argument
+                    })
                     Spacer(modifier = Modifier.width(8.dp))
                 }
             }
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Llista de tots els manuals (vertical)
+            // Llista de tots els manuals (vertical en graella de 2 columnes)
             Text("Tots els manuals", style = MaterialTheme.typography.titleMedium)
             Spacer(modifier = Modifier.height(8.dp))
-            LazyColumn {
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(2), // 2 columnes
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 600.dp), // Limita l'alçada màxima
+                contentPadding = PaddingValues(2.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
                 items(manuals) { manual ->
-                    ManualItem(manual = manual)
-                    Spacer(modifier = Modifier.height(8.dp))
+                    ManualItem(manual = manual, onClick = {
+                        viewModel.incrementManualUsage(manual.id) // Incrementar l'ús del manual
+                        viewModel.updateLastUsedManual(manual.nom) // Actualitzar l'últim manual utilitz
+                        navController.navigate("homeManual/${manual.nom}") // Navegació amb argument
+
+                    })
                 }
             }
         }
     }
+
     if (showAddManualDialog) {
         AddManualDialog(
             onDismiss = { showAddManualDialog = false },
@@ -129,16 +172,18 @@ fun HomeScreen(viewModel: HomeViewModel) {
     }
 }
 @Composable
-fun ManualItem(manual: Manuals, modifier: Modifier = Modifier) {
+fun ManualItem(manual: Manuals, modifier: Modifier = Modifier, onClick: () -> Unit) {
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .padding(8.dp),
+            .height(245.dp)
+            .padding(8.dp)
+            .clickable { onClick() }, // Afegir el modificador clickable
         shape = RoundedCornerShape(8.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(12.dp)
         ) {
             // Imatge del manual
             Image(
@@ -146,7 +191,7 @@ fun ManualItem(manual: Manuals, modifier: Modifier = Modifier) {
                 contentDescription = manual.nom,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(150.dp)
+                    .height(140.dp)
                     .clip(RoundedCornerShape(8.dp)),
                 contentScale = ContentScale.Crop
             )
@@ -165,6 +210,7 @@ fun ManualItem(manual: Manuals, modifier: Modifier = Modifier) {
     }
 }
 
+
 @Composable
 fun AddManualDialog(
     onDismiss: () -> Unit,
@@ -172,7 +218,13 @@ fun AddManualDialog(
 ) {
     var nom by remember { mutableStateOf("") }
     var descripcio by remember { mutableStateOf("") }
-    val imageUri by remember { mutableStateOf<Uri?>(null) }
+    var imageUri by remember { mutableStateOf<Uri?>(null) }
+
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let { imageUri = it }
+    }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -191,7 +243,7 @@ fun AddManualDialog(
                     label = { Text("Descripció del manual") }
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-                Button(onClick = { /* Obrir selector d'imatges */ }) {
+                Button(onClick = { launcher.launch("image/*") }) {
                     Text("Seleccionar imatge")
                 }
             }
@@ -211,5 +263,73 @@ fun AddManualDialog(
             }
         }
     )
+}
+
+@Composable
+fun AppNavigation() {
+    val navController = rememberNavController()
+    val viewModel: HomeViewModel = viewModel()
+    val loginViewModel: LoginViewModel = viewModel()
+
+    NavHost(navController = navController, startDestination = "home") {
+        composable("home") {
+            HomeScreen(viewModel = viewModel, navController = navController)
+        }
+        composable("homeManual/{manualName}") { backStackEntry ->
+            val manualName = backStackEntry.arguments?.getString("manualName") ?: ""
+            HomeManualScreen(manualName = manualName,navController = navController)
+        }
+        composable("login") {
+            LoginScreen(loginViewModel = loginViewModel)
+        }
+    }
+
+    // Definim les rutes de la toolbar inferior
+    sealed class BottomNavItem(
+        val route: String,
+        val icon: ImageVector,
+        val label: String
+    ) {
+        object Home : BottomNavItem("home", Icons.Default.Home, "Home")
+        object Profile : BottomNavItem("profile", Icons.Default.Person, "Perfil")
+        object Search : BottomNavItem("search", Icons.Default.Search, "Cercar")
+        object Create : BottomNavItem("create", Icons.Default.Add, "Crear")
+    }
+
+    // Funció per mostrar la toolbar inferior
+    @Composable
+    fun BottomToolbar(navController: NavController, showAddManualDialog: () -> Unit) {
+        val items = listOf(
+            BottomNavItem.Home,
+            BottomNavItem.Search,
+            BottomNavItem.Create,
+            BottomNavItem.Profile
+        )
+
+        BottomAppBar(
+            modifier = Modifier.height(56.dp),
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
+            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+        ) {
+            items.forEach { item ->
+                IconButton(
+                    onClick = {
+                        when (item) {
+                            is BottomNavItem.Home -> navController.navigate(item.route)
+                            is BottomNavItem.Profile -> navController.navigate(item.route)
+                            is BottomNavItem.Search -> navController.navigate(item.route)
+                            is BottomNavItem.Create -> showAddManualDialog()
+                        }
+                    },
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Icon(
+                        imageVector = item.icon,
+                        contentDescription = item.label
+                    )
+                }
+            }
+        }
+    }
 }
 
