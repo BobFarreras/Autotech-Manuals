@@ -1,5 +1,6 @@
 package com.deixebledenkaito.autotechmanuals.ui.signup
 
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -35,12 +36,9 @@ fun SignupScreen(viewModel: SignUpViewModel) {
     val context = LocalContext.current
     var email by remember { mutableStateOf("") } // Estat per l'input d'email
     var password by remember { mutableStateOf("") } // Estat per l'input de contrasenya
+    var name by remember { mutableStateOf("") } // Estat per l'input del nom
+    var description by remember { mutableStateOf("") } // Estat per l'input de la descripció
     val isLoading by viewModel.isLoading.collectAsState(initial = false) // Estat per mostrar el loading
-
-    // Efecte que s'executa quan hi ha canvis a l'estat de càrrega
-    LaunchedEffect(viewModel) {
-        viewModel.isLoading.collectLatest { }
-    }
 
     // Layout principal de la pantalla
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -57,21 +55,39 @@ fun SignupScreen(viewModel: SignUpViewModel) {
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
-                label = { Text("Password") },
+                label = { Text("Contrasenya") },
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            // Camp d'entrada per el nom
+            OutlinedTextField(
+                value = name,
+                onValueChange = { name = it },
+                label = { Text("Nom") },
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            // Camp d'entrada per la descripció
+            OutlinedTextField(
+                value = description,
+                onValueChange = { description = it },
+                label = { Text("Descripció") },
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(modifier = Modifier.height(16.dp))
             // Botó per fer el registre
             Button(
                 onClick = {
-                    viewModel.register(email, password) {
+                    viewModel.register(email, password, name, description) {
+                        // Navega a la HomeActivity després del registre
                         context.startActivity(Intent(context, HomeActivity::class.java))
+                        (context as? Activity)?.finish() // Tanca la SignupActivity
                     }
                 },
                 modifier = Modifier.fillMaxWidth(),
                 enabled = !isLoading // Deshabilita el botó si s'està carregant
             ) {
-                Text("Sign Up")
+                Text("Registra't")
             }
             // Mostra un indicador de càrrega si s'està carregant
             if (isLoading) {
@@ -80,4 +96,3 @@ fun SignupScreen(viewModel: SignUpViewModel) {
         }
     }
 }
-

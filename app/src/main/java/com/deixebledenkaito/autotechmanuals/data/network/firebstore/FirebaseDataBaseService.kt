@@ -2,17 +2,19 @@ package com.deixebledenkaito.autotechmanuals.data.network.firebstore
 
 import android.net.Uri
 import android.util.Log
+import com.deixebledenkaito.autotechmanuals.data.response.AportacioResponse
 import com.deixebledenkaito.autotechmanuals.data.response.ManualResponse
 import com.deixebledenkaito.autotechmanuals.data.response.ModelResponse
 import com.deixebledenkaito.autotechmanuals.data.response.TopManualsResponse
 import com.deixebledenkaito.autotechmanuals.data.response.UserResponse
+import com.deixebledenkaito.autotechmanuals.domain.AportacioUser
 import com.deixebledenkaito.autotechmanuals.domain.Manuals
 import com.deixebledenkaito.autotechmanuals.domain.Model
 import com.deixebledenkaito.autotechmanuals.domain.User
 
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.Query
+
 
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageMetadata
@@ -37,6 +39,7 @@ class FirebaseDataBaseService @Inject constructor(
         const val TOP_MANUALS_PATH = "top_manuals"
         const val MODELS_PATH = "models"
         const val MANAGAMENTS_PATH = "managaments"
+        const val APORTACIONS_PATH = "aportacions"
     }
 
 
@@ -116,6 +119,19 @@ class FirebaseDataBaseService @Inject constructor(
             null
         }
     }
+    suspend fun getManualsByUser(userId: String): List<Manuals> {
+        return try {
+            firestore.collection(MANUALS_PATH)
+                .whereEqualTo("userId", userId) // Assumim que cada manual té un camp "userId"
+                .get()
+                .await()
+                .toObjects(ManualResponse::class.java)
+                .map { it.toDomain() }
+        } catch (e: Exception) {
+            Log.e("FirebaseDataBaseService", "Error obtenint manuals de l'usuari: ${e.message}")
+            emptyList()
+        }
+    }
     // Funció per pujar i descarregar una imatge
     suspend fun uploadAndDownloadImage(uri: Uri): String {
         return suspendCancellableCoroutine { continuation ->
@@ -188,11 +204,11 @@ class FirebaseDataBaseService @Inject constructor(
         }
     }
 
-    suspend fun updateLastUsedManual(manualName: String) {
+    fun updateLastUsedManual(manualName: String) {
         sharedPreferencesHelper.saveLastUsedManual(manualName)
     }
 
-    suspend fun getLastUsedManual(): String? {
+    fun getLastUsedManual(): String? {
         return sharedPreferencesHelper.getLastUsedManual()
     }
 
@@ -203,6 +219,115 @@ class FirebaseDataBaseService @Inject constructor(
             .toObject(ManualResponse::class.java) // Deserialitza a ManualResponse
             ?.toDomain() // Converteix a Manuals
     }
+
+    suspend fun saveUserData(user: User): Boolean {
+        return try {
+            // Crear un document a la col·lecció USUARIS_PATH amb l'ID de l'usuari
+            firestore.collection(USUARIS_PATH)
+                .document(user.id)
+                .set(
+                    mapOf(
+                        "id" to user.id,
+                        "name" to user.name,
+                        "email" to user.email,
+                        "profileImageUrl" to user.profileImageUrl,
+                        "description" to user.description
+                    )
+                )
+                .await()
+            true // Retornem true si s'ha guardat correctament
+        } catch (e: Exception) {
+            Log.e("FirebaseDataBaseService", "Error guardant dades de l'usuari: ${e.message}")
+            false // Retornem false si hi ha hagut un error
+        }
+    }
+
+
+    suspend fun getAportacionsByUser(userId: String): List<AportacioUser> {
+        return try {
+            firestore.collection("usuaris")
+                .document(userId)
+                .collection("aportacions")
+                .get()
+                .await()
+                .toObjects(AportacioUser::class.java)
+        } catch (e: Exception) {
+            Log.e("FirebaseDataBaseService", "Error obtenint aportacions: ${e.message}")
+            emptyList()
+        }
+    }
+
+    suspend fun addAportacio(userId: String, aportacio: AportacioUser): Boolean {
+        return try {
+            firestore.collection("usuaris")
+                .document(userId)
+                .collection("aportacions")
+                .document(aportacio.id)
+                .set(aportacio.toFirestore())
+                .await()
+            true
+        } catch (e: Exception) {
+            Log.e("FirebaseDataBaseService", "Error afegint aportació: ${e.message}")
+            false
+        }
+    }
+    suspend fun addAportacioEnElManual(userId: String, aportacio: AportacioUser): Boolean {
+        return try {
+            firestore.collection(MANUALS_PATH)
+                .document(aportacio.manual)
+                .collection(MODELS_PATH)
+                .document(aportacio.model)
+                .collection(APORTACIONS_PATH)
+                .document(aportacio.id)
+                .set(aportacio.toFirestore())
+                .await()
+            true
+        } catch (e: Exception) {
+            Log.e("FirebaseDataBaseService", "Error afegint aportació al manual: ${e.message}")
+            false
+        }
+    }
+
+    suspend fun eliminarAportacio(userId: String, aportacioId: String): Boolean {
+        return try {
+            // 1️⃣ Eliminar l'aportació de Firestore
+            firestore.collection("usuaris")
+                .document(userId)
+                .collection("aportacions")
+                .document(aportacioId)
+                .delete()
+                .await()
+
+            // 2️⃣ Eliminar la carpeta de Storage
+            eliminarCarpetaStorage("usuaris/$userId/aportacions/$aportacioId")
+
+            true // Eliminació correcta
+        } catch (e: Exception) {
+            Log.e("FirebaseDataBaseService", "Error eliminant aportació: ${e.message}")
+            false // Error durant l'eliminació
+        }
+    }
+
+    private suspend fun eliminarCarpetaStorage(rutaCarpeta: String) {
+        try {
+            val listResult = storage.reference.child(rutaCarpeta).listAll().await()
+
+            // Eliminar tots els fitxers dins la carpeta
+            listResult.items.forEach { it.delete().await() }
+
+            // Eliminar subcarpetes (si n'hi ha)
+            listResult.prefixes.forEach { eliminarCarpetaStorage(it.path) }
+
+            Log.d("FirebaseDataBaseService", "Carpeta eliminada: $rutaCarpeta")
+        } catch (e: Exception) {
+            Log.e("FirebaseDataBaseService", "Error eliminant carpeta $rutaCarpeta: ${e.message}")
+        }
+    }
+
+
+
+
+
 
 
 

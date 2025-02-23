@@ -52,6 +52,7 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.androidx.tools.core)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -89,6 +90,10 @@ dependencies {
     implementation ("io.coil-kt:coil-compose:2.2.2") // Per carregar imatges des de URLs
     implementation ("androidx.activity:activity-compose:1.7.0")
     implementation ("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.1")
+//    PER REPRODUIUR VIDEOS A ANDROID
+    implementation ("androidx.media3:media3-exoplayer:1.1.1")
+    implementation ("androidx.media3:media3-ui:1.1.1")
+
 
 
 

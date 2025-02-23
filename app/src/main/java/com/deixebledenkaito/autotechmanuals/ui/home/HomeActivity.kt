@@ -1,8 +1,12 @@
 package com.deixebledenkaito.autotechmanuals.ui.home
 
 
+import ProfileScreen
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.view.View
+import android.view.WindowInsetsController
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
@@ -15,6 +19,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -22,12 +27,14 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ExitToApp
 
 import androidx.compose.material3.*
@@ -36,19 +43,26 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.view.WindowCompat
 
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.privacysandbox.tools.core.model.Type
 import coil.compose.rememberImagePainter
 
 import com.deixebledenkaito.autotechmanuals.domain.Manuals
+import com.deixebledenkaito.autotechmanuals.ui.ModelDatailScreen.ModelDetailScreen
+import com.deixebledenkaito.autotechmanuals.ui.aportacions.NovaAportacioScreen
 import com.deixebledenkaito.autotechmanuals.ui.homeManuals.HomeManualScreen
 import com.deixebledenkaito.autotechmanuals.ui.login.LoginScreen
 import com.deixebledenkaito.autotechmanuals.ui.login.LoginViewModel
@@ -57,19 +71,15 @@ import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class HomeActivity : ComponentActivity() {
-
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-
             AppNavigation()
-
-
-
         }
     }
 }
+
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(viewModel: HomeViewModel, navController: NavController) {
@@ -79,6 +89,9 @@ fun HomeScreen(viewModel: HomeViewModel, navController: NavController) {
     val user by viewModel.user.collectAsState()
 
     var showAddManualDialog by remember { mutableStateOf(false) }
+
+    var showSearchDialog by remember { mutableStateOf(false) } // Estat per al diàleg de cerca
+    var searchQuery by remember { mutableStateOf("") } // Estat per al terme de cerca
 
     LaunchedEffect(Unit) {
         viewModel.loadManuals()
@@ -92,19 +105,24 @@ fun HomeScreen(viewModel: HomeViewModel, navController: NavController) {
             TopAppBar(
                 title = { Text("Benvingut, ${user?.name ?: "Usuari"}") },
                 actions = {
-                    IconButton(onClick = { showAddManualDialog = true }) {
-                        Icon(Icons.Default.Add, contentDescription = "Afegir manual")
-                    }
-                    IconButton(onClick = {
-                        viewModel.logout {
-                            navController.navigate("login") {
-                                popUpTo("home") { inclusive = true }
+                    IconButton(
+                        onClick = {
+                            viewModel.logout {
+                                // Navega a la pantalla de login
+                                navController.navigate("login") {
+                                    popUpTo("home") { inclusive = true } // Neteja el back stack
+                                }
                             }
                         }
-                    }) {
+                    ) {
                         Icon(Icons.Default.ExitToApp, contentDescription = "Tancar sessió")
                     }
                 }
+            )
+        }, bottomBar = {
+            BottomToolbar(navController = navController, showAddManualDialog = {
+                showAddManualDialog = true}, showSearchDialog = {showSearchDialog = true}
+
             )
         }
     ) { paddingValues ->
@@ -129,7 +147,7 @@ fun HomeScreen(viewModel: HomeViewModel, navController: NavController) {
             Spacer(modifier = Modifier.height(8.dp))
             LazyRow {
                 items(topManuals) { manual ->
-                    ManualItem(manual = manual,modifier = Modifier.width(200.dp), onClick = {
+                    ManualItem(manual = manual, modifier = Modifier.width(200.dp), onClick = {
                         navController.navigate("homeManual/${manual.nom}") // Navegació amb argument
                     })
                     Spacer(modifier = Modifier.width(8.dp))
@@ -170,20 +188,32 @@ fun HomeScreen(viewModel: HomeViewModel, navController: NavController) {
             }
         )
     }
+
+    if (showSearchDialog) {
+        SearchDialog(
+            onDismiss = { showSearchDialog = false },
+            onSearch = { query ->
+                navController.navigate("searchResults/$query") // Navega a la pantalla de result
+            }
+        )
+    }
 }
 @Composable
 fun ManualItem(manual: Manuals, modifier: Modifier = Modifier, onClick: () -> Unit) {
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .height(245.dp)
+            .height(180.dp)
             .padding(8.dp)
-            .clickable { onClick() }, // Afegir el modificador clickable
+            .clickable { onClick() },
         shape = RoundedCornerShape(8.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column(
-            modifier = Modifier.padding(12.dp)
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(12.dp),
+            horizontalAlignment = Alignment.CenterHorizontally // Centra el contingut horitzontalment
         ) {
             // Imatge del manual
             Image(
@@ -191,21 +221,26 @@ fun ManualItem(manual: Manuals, modifier: Modifier = Modifier, onClick: () -> Un
                 contentDescription = manual.nom,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(140.dp)
+                    .height(100.dp)
                     .clip(RoundedCornerShape(8.dp)),
-                contentScale = ContentScale.Crop
+                contentScale = ContentScale.FillBounds // Evita que la imatge es talli
             )
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(6.dp))
             // Nom del manual
             Text(
                 text = manual.nom,
-                style = MaterialTheme.typography.titleLarge // Estil per al títol
+                style = MaterialTheme.typography.titleLarge,
+                textAlign = TextAlign.Center, // Centrar el text
+                modifier = Modifier.fillMaxWidth()
             )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = manual.descripcio,
-                style = MaterialTheme.typography.bodyMedium // Estil per al cos del text
-            )
+
+            // Descripció del manual
+//            Text(
+//                text = manual.descripcio,
+//                style = MaterialTheme.typography.bodyMedium,
+//                textAlign = TextAlign.Center, // Centrar el text
+//                modifier = Modifier.fillMaxWidth()
+//            )
         }
     }
 }
@@ -214,7 +249,7 @@ fun ManualItem(manual: Manuals, modifier: Modifier = Modifier, onClick: () -> Un
 @Composable
 fun AddManualDialog(
     onDismiss: () -> Unit,
-    onConfirm: (String, String, Uri) -> Unit
+    onConfirm: (String, String, Uri) -> Unit,
 ) {
     var nom by remember { mutableStateOf("") }
     var descripcio by remember { mutableStateOf("") }
@@ -264,7 +299,6 @@ fun AddManualDialog(
         }
     )
 }
-
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
@@ -277,59 +311,156 @@ fun AppNavigation() {
         }
         composable("homeManual/{manualName}") { backStackEntry ->
             val manualName = backStackEntry.arguments?.getString("manualName") ?: ""
-            HomeManualScreen(manualName = manualName,navController = navController)
+            HomeManualScreen(manualName = manualName, navController = navController)
         }
         composable("login") {
             LoginScreen(loginViewModel = loginViewModel)
         }
+        composable("searchResults/{searchQuery}") { backStackEntry ->
+            val searchQuery = backStackEntry.arguments?.getString("searchQuery") ?: ""
+            SearchResultsScreen(
+                searchQuery = searchQuery,
+                manuals = viewModel.manuals.value,
+                navController = navController
+            )
+        }
+        composable("profile") {
+            ProfileScreen(navController = navController)
+        }
+        composable("novaAportacio") { navBackStackEntry ->
+            NovaAportacioScreen(navController = navController)
+        }
+        // Defineix la ruta per a ModelDetailScreen
+        composable("modelDetail/{manualId}/{modelId}") { backStackEntry ->
+            val manualId = backStackEntry.arguments?.getString("manualId") ?: ""
+            val modelId = backStackEntry.arguments?.getString("modelId") ?: ""
+            ModelDetailScreen(
+                manualId = manualId,
+                modelId = modelId,
+                navController = navController
+            )
+        }
     }
+}
+// Funció per mostrar la toolbar inferior
+@Composable
+fun BottomToolbar(navController: NavController, showAddManualDialog: () -> Unit, showSearchDialog: () -> Unit) {
+    val items = listOf(
+        BottomNavItem.Home,
+        BottomNavItem.Search,
+        BottomNavItem.Create,
+        BottomNavItem.Profile
+    )
 
-    // Definim les rutes de la toolbar inferior
-    sealed class BottomNavItem(
-        val route: String,
-        val icon: ImageVector,
-        val label: String
-    ) {
-        object Home : BottomNavItem("home", Icons.Default.Home, "Home")
-        object Profile : BottomNavItem("profile", Icons.Default.Person, "Perfil")
-        object Search : BottomNavItem("search", Icons.Default.Search, "Cercar")
-        object Create : BottomNavItem("create", Icons.Default.Add, "Crear")
-    }
+    BottomAppBar(
+        modifier = Modifier
+            .height(90.dp)
+            .windowInsetsPadding(WindowInsets.navigationBars),
 
-    // Funció per mostrar la toolbar inferior
-    @Composable
-    fun BottomToolbar(navController: NavController, showAddManualDialog: () -> Unit) {
-        val items = listOf(
-            BottomNavItem.Home,
-            BottomNavItem.Search,
-            BottomNavItem.Create,
-            BottomNavItem.Profile
-        )
+        containerColor = Color.White,
 
-        BottomAppBar(
-            modifier = Modifier.height(56.dp),
-            containerColor = MaterialTheme.colorScheme.primaryContainer,
-            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
         ) {
-            items.forEach { item ->
-                IconButton(
-                    onClick = {
-                        when (item) {
-                            is BottomNavItem.Home -> navController.navigate(item.route)
-                            is BottomNavItem.Profile -> navController.navigate(item.route)
-                            is BottomNavItem.Search -> navController.navigate(item.route)
-                            is BottomNavItem.Create -> showAddManualDialog()
-                        }
-                    },
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Icon(
-                        imageVector = item.icon,
-                        contentDescription = item.label
-                    )
-                }
+        items.forEach { item ->
+            IconButton(
+                onClick = {
+                    when (item) {
+                        is BottomNavItem.Home -> navController.popBackStack() // tornar enrrera
+                        is BottomNavItem.Profile -> navController.navigate("profile")
+                        is BottomNavItem.Search -> showSearchDialog()
+                        is BottomNavItem.Create -> showAddManualDialog()
+                    }
+                },
+                modifier = Modifier.weight(1f)
+            ) {
+                Icon(
+                    imageVector = item.icon,
+                    contentDescription = item.label
+                )
             }
         }
     }
 }
+
+
+
+@Composable
+fun SearchDialog(
+    onDismiss: () -> Unit, // Funció per tancar el diàleg
+    onSearch: (String) -> Unit // Funció que s'executa quan es fa la cerca
+) {
+    var searchQuery by remember { mutableStateOf("") } // Estat per al terme de cerca
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Cercar manuals") },
+        text = {
+            Column {
+                TextField(
+                    value = searchQuery,
+                    onValueChange = { searchQuery = it },
+                    label = { Text("Introdueix el terme de cerca") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    onSearch(searchQuery) // Executa la cerca amb el terme introduït
+                    onDismiss() // Tanca el diàleg
+                }
+            ) {
+                Text("Cercar")
+            }
+        },
+        dismissButton = {
+            Button(onClick = onDismiss) {
+                Text("Cancel·lar")
+            }
+        }
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SearchResultsScreen(
+    searchQuery: String, // Terme de cerca
+    manuals: List<Manuals>, // Llista de manuals
+    navController: NavController // Controlador de navegació
+) {
+    // Filtra els manuals segons el terme de cerca
+    val filteredManuals = manuals.filter { manual ->
+        manual.nom.contains(searchQuery, ignoreCase = true) ||
+                manual.descripcio.contains(searchQuery, ignoreCase = true)
+    }
+
+    // Pantalla de resultats
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Resultats de cerca: $searchQuery") },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Tornar")
+                    }
+                }
+            )
+        }
+    ) { paddingValues ->
+        LazyColumn(
+            modifier = Modifier
+                .padding(paddingValues)
+                .fillMaxSize()
+                .padding(8.dp)
+        ) {
+            items(filteredManuals) { manual ->
+                ManualItem(manual = manual, onClick = {
+                    navController.navigate("homeManual/${manual.nom}") // Navegació amb argument
+                })
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+        }
+    }
+}
+
 

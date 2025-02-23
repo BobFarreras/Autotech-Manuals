@@ -2,6 +2,8 @@ package com.deixebledenkaito.autotechmanuals.ui.home
 
 
 import android.net.Uri
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.deixebledenkaito.autotechmanuals.data.network.auth.AuthService
@@ -34,6 +36,7 @@ class HomeViewModel @Inject constructor(
 
     private val _user = MutableStateFlow<User?>(null)
     val user: StateFlow<User?> get() = _user
+
 
     // Funció per carregar totes les dades necessàries
     fun loadAllData() {
@@ -71,11 +74,7 @@ class HomeViewModel @Inject constructor(
 
     fun loadUser() {
         viewModelScope.launch {
-            _user.value = firebaseDataBaseService.getUser() ?: User(
-                id = "unknown",
-                name = "Usuari",
-                profileImageUrl = ""
-            )
+            _user.value = firebaseDataBaseService.getUser()
         }
     }
 
@@ -129,4 +128,8 @@ class HomeViewModel @Inject constructor(
             }
         }
     }
+
+
+
+
 }

@@ -44,61 +44,83 @@ class LoginActivity : ComponentActivity() {
 @Composable
 fun LoginScreen(loginViewModel: LoginViewModel) {
     val context = LocalContext.current
-    val isLoading by loginViewModel.isLoading.collectAsState()
+    val loginState by loginViewModel.loginState.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
 
-    var showPhoneDialog by remember { mutableStateOf(false) }
-    // Observa l'estat de càrrega
-    LaunchedEffect(Unit) {
-        loginViewModel.isLoading.collect { isLoading ->
-            // Aquí pots gestionar l'estat de càrrega si cal
+    var user by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+
+    // Observar l'estat de l'inici de sessió
+    LaunchedEffect(loginState) {
+        when (loginState) {
+            is LoginState.Success -> {
+                // Navegar a la pantalla principal
+                context.startActivity(Intent(context, HomeActivity::class.java))
+            }
+            is LoginState.Error -> {
+                // Mostrar missatge d'error amb Snackbar
+                val errorMessage = (loginState as LoginState.Error).message
+                snackbarHostState.showSnackbar(errorMessage)
+            }
+            else -> {
+                // No cal fer res en altres estats
+            }
         }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        // Imatge del logo centrada a la part superior
-        Image(
-            painter = rememberImagePainter(R.drawable.logo_v1),
-            contentDescription = "Logo",
-            modifier = Modifier.size(100.dp).align(Alignment.CenterHorizontally)
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Camp d'usuari
-        var user by remember { mutableStateOf("matutano8@gmail.com") }
-        TextField(
-            value = user,
-            onValueChange = { user = it },
-            label = { Text("Usuari") },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Camp de contrasenya
-        var password by remember { mutableStateOf("123456") }
-        TextField(
-            value = password,
-            onValueChange = { password = it },
-            label = { Text("Contrasenya") },
-            visualTransformation = PasswordVisualTransformation(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.End
+    Scaffold(
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Enllaç per registrar-se alineat a la dreta
+            // Imatge del logo
+            Image(
+                painter = rememberImagePainter(R.drawable.logo_v1),
+                contentDescription = "Logo",
+                modifier = Modifier.size(100.dp)
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Camp d'usuari
+            TextField(
+                value = user,
+                onValueChange = { user = it },
+                label = { Text("Usuari") },
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Camp de contrasenya
+            TextField(
+                value = password,
+                onValueChange = { password = it },
+                label = { Text("Contrasenya") },
+                visualTransformation = PasswordVisualTransformation(),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Botó d'inici de sessió
+            Button(
+                onClick = { loginViewModel.login(user, password) },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Iniciar sessió")
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Enllaç per registrar-se
             TextButton(
                 onClick = {
                     context.startActivity(Intent(context, SignupActivity::class.java))
@@ -107,49 +129,8 @@ fun LoginScreen(loginViewModel: LoginViewModel) {
                 Text("Registra't")
             }
         }
-
-        // Botó d'inici de sessió
-        Button(
-            onClick = {
-                loginViewModel.login(user, password) {
-                    context.startActivity(Intent(context, HomeActivity::class.java))
-                }
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Iniciar sessió")
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        if (showPhoneDialog) {
-            PhoneLoginDialog(
-                loginViewModel = loginViewModel,
-                onDismiss = { showPhoneDialog = false }
-            )
-        }
-
-        // Botó d'inici de sessió amb telèfon amb icona de mòbil
-        Button(
-            onClick = { showPhoneDialog = true },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Icon(
-                painter = painterResource(id = R.drawable.ic_movil),
-                contentDescription = "Phone Icon",
-                modifier = Modifier.size(24.dp)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text("Iniciar sessió amb telèfon")
-        }
-
-        // Indicador de càrrega
-        if (isLoading) {
-            CircularProgressIndicator(modifier = Modifier.padding(16.dp))
-        }
     }
 }
-
 
 
 

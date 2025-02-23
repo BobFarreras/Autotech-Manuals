@@ -24,6 +24,7 @@ firebaseMessagingKtx = "24.1.0"
 firebaseStorageKtx = "21.0.1"
 firebaseFirestoreKtx = "25.1.2"
 datastoreCoreAndroid = "1.1.2"
+toolsCore = "1.0.0-alpha11"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -56,6 +57,7 @@ androidx-datastore-preferences = { module = "androidx.datastore:datastore-prefer
 #HILT
 hilt-android = {module = "com.google.dagger:hilt-android", version.ref = "hilt"}
 hilt-compiler = {module = "com.google.dagger:hilt-compiler", version.ref = "hilt"}
+androidx-tools-core = { group = "androidx.privacysandbox.tools", name = "tools-core", version.ref = "toolsCore" }
 
 
 [plugins]

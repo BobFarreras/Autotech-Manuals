@@ -11,20 +11,28 @@ import kotlin.coroutines.resumeWithException
 
 class AuthService @Inject constructor(private val firebaseAuth: FirebaseAuth) {
 
-    // Inici de sessió amb correu i contrasenya
-    suspend fun login(user: String, password: String): FirebaseUser? {
-        return firebaseAuth.signInWithEmailAndPassword(user, password).await().user
+    suspend fun login(user: String, password: String): Result<FirebaseUser?> {
+        return try {
+            val result = firebaseAuth.signInWithEmailAndPassword(user, password).await()
+            Result.Success(result.user) // Retorna un resultat exitós
+        } catch (e: FirebaseAuthInvalidCredentialsException) {
+            Result.Error("Credencials incorrectes", AuthErrorType.INVALID_CREDENTIALS) // Retorna un error
+        } catch (e: FirebaseAuthInvalidUserException) {
+            Result.Error("Usuari no trobat", AuthErrorType.USER_NOT_FOUND) // Retorna un error
+        } catch (e: Exception) {
+            Result.Error("Error desconegut: ${e.message}", AuthErrorType.UNKNOWN_ERROR) // Retorna un error
+        }
     }
 
     // Registre amb correu i contrasenya
-    suspend fun register(email: String, password: String): FirebaseUser? {
+    suspend fun register(email: String, password: String): AuthResult? {
         return suspendCancellableCoroutine { continuation ->
             firebaseAuth.createUserWithEmailAndPassword(email, password)
-                .addOnSuccessListener {
-                    continuation.resume(it.user)
+                .addOnSuccessListener { authResult ->
+                    continuation.resume(authResult)
                 }
-                .addOnFailureListener {
-                    continuation.resumeWithException(it)
+                .addOnFailureListener { exception ->
+                    continuation.resumeWithException(exception)
                 }
         }
     }
