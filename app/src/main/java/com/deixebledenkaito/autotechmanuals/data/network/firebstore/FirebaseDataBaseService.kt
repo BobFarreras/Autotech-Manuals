@@ -1,13 +1,21 @@
 package com.deixebledenkaito.autotechmanuals.data.network.firebstore
 
+import android.content.ContentValues
+import android.content.Context
 import android.net.Uri
+import android.os.Build
+import android.os.Environment
+import android.provider.MediaStore
 import android.util.Log
-import com.deixebledenkaito.autotechmanuals.data.response.AportacioResponse
+import androidx.annotation.RequiresApi
+
+import com.deixebledenkaito.autotechmanuals.data.response.ErrorsDelModelResponse
 import com.deixebledenkaito.autotechmanuals.data.response.ManualResponse
 import com.deixebledenkaito.autotechmanuals.data.response.ModelResponse
 import com.deixebledenkaito.autotechmanuals.data.response.TopManualsResponse
 import com.deixebledenkaito.autotechmanuals.data.response.UserResponse
 import com.deixebledenkaito.autotechmanuals.domain.AportacioUser
+import com.deixebledenkaito.autotechmanuals.domain.ErrorsDelModel
 import com.deixebledenkaito.autotechmanuals.domain.Manuals
 import com.deixebledenkaito.autotechmanuals.domain.Model
 import com.deixebledenkaito.autotechmanuals.domain.User
@@ -18,9 +26,13 @@ import com.google.firebase.firestore.FirebaseFirestore
 
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageMetadata
+import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.storageMetadata
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
+import java.io.File
 import java.util.Date
 import javax.inject.Inject
 import kotlin.coroutines.resume
@@ -30,7 +42,7 @@ class FirebaseDataBaseService @Inject constructor(
     private val firestore: FirebaseFirestore,
     private val storage: FirebaseStorage,
     private val auth: FirebaseAuth,
-    private val sharedPreferencesHelper: SharedPreferencesHelper
+
 ) {
 
     companion object {
@@ -200,16 +212,8 @@ class FirebaseDataBaseService @Inject constructor(
     suspend fun getModelsForManual(manualName: String): List<Model> {
         return firestore.collection(MANUALS_PATH).document(manualName).collection(MODELS_PATH).get()
             .await().map { document ->
-            document.toObject(ModelResponse::class.java).toDomainModel()
-        }
-    }
-
-    fun updateLastUsedManual(manualName: String) {
-        sharedPreferencesHelper.saveLastUsedManual(manualName)
-    }
-
-    fun getLastUsedManual(): String? {
-        return sharedPreferencesHelper.getLastUsedManual()
+                document.toObject(ModelResponse::class.java).toDomainModel()
+            }
     }
 
     suspend fun getManualByName(manualName: String): Manuals? {
@@ -288,18 +292,28 @@ class FirebaseDataBaseService @Inject constructor(
         }
     }
 
-    suspend fun eliminarAportacio(userId: String, aportacioId: String): Boolean {
+    suspend fun eliminarAportacio(userId: String, aportacio: AportacioUser): Boolean {
         return try {
-            // 1️⃣ Eliminar l'aportació de Firestore
+            // 1️⃣ Eliminar l'aportació de la col·lecció d'usuaris
             firestore.collection("usuaris")
                 .document(userId)
                 .collection("aportacions")
-                .document(aportacioId)
+                .document(aportacio.id)
                 .delete()
                 .await()
 
-            // 2️⃣ Eliminar la carpeta de Storage
-            eliminarCarpetaStorage("usuaris/$userId/aportacions/$aportacioId")
+            // 2️⃣ Eliminar l'aportació de la col·lecció de manuals
+            firestore.collection(MANUALS_PATH)
+                .document(aportacio.manual)
+                .collection(MODELS_PATH)
+                .document(aportacio.model)
+                .collection(APORTACIONS_PATH)
+                .document(aportacio.id)
+                .delete()
+                .await()
+
+            // 3️⃣ Eliminar la carpeta de Storage (si existeix)
+            eliminarCarpetaStorage("usuaris/$userId/aportacions/${aportacio.id}")
 
             true // Eliminació correcta
         } catch (e: Exception) {
@@ -321,6 +335,116 @@ class FirebaseDataBaseService @Inject constructor(
             Log.d("FirebaseDataBaseService", "Carpeta eliminada: $rutaCarpeta")
         } catch (e: Exception) {
             Log.e("FirebaseDataBaseService", "Error eliminant carpeta $rutaCarpeta: ${e.message}")
+        }
+    }
+
+    // Buscar un error pel número
+    suspend fun buscarErrorPerNumero(manualId: String, modelId: String, numero: String): ErrorsDelModel? {
+        return try {
+            // Consulta a Firestore
+            val querySnapshot = firestore.collection("manuals")
+                .document(manualId)
+                .collection("models")
+                .document(modelId)
+                .collection("errors")
+                .whereEqualTo("numero", numero) // Buscar per número
+                .get()
+                .await()
+
+            // Comprovar si s'ha trobat algun error
+            if (querySnapshot.isEmpty) {
+                null // No s'ha trobat cap error
+            } else {
+                // Convertir el primer document trobat a ErrorsDelModel
+                querySnapshot.documents[0].toObject(ErrorsDelModelResponse::class.java)?.toDomain()
+            }
+        } catch (e: Exception) {
+            Log.e("FirebaseDataBaseService", "Error cercant l'error: ${e.message}")
+            null
+        }
+    }
+
+    suspend fun obtenirPdfsDelModel(manualId: String, modelId: String): List<StorageReference> {
+        return try {
+            val pdfsRef = storage.reference.child("manuals/$manualId/$modelId/pdfs")
+            val listResult = pdfsRef.listAll().await()
+            Log.d("StoragePdf", "PDFs trobats: ${listResult.items.size}")
+            listResult.items // Retorna la llista de PDFs
+        } catch (e: Exception) {
+            Log.e("FirebaseDataBaseService", "Error obtenint PDFs: ${e.message}")
+            emptyList()
+        }
+    }
+
+    // Descàrrega d'un PDF
+    @RequiresApi(Build.VERSION_CODES.Q)
+    suspend fun descarregarPdf(pdfRef: StorageReference, context: Context): Uri? {
+        return withContext(Dispatchers.IO) {
+            try {
+                // Obtenir el nom del fitxer
+                val fileName = pdfRef.name
+
+                // Crear un fitxer a la carpeta de descàrregues utilitzant MediaStore
+                val contentValues = ContentValues().apply {
+                    put(MediaStore.Downloads.DISPLAY_NAME, fileName)
+                    put(MediaStore.Downloads.MIME_TYPE, "application/pdf")
+                    put(MediaStore.Downloads.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS)
+                }
+
+                // Inserir el fitxer a la carpeta de descàrregues
+                val resolver = context.contentResolver
+                val uri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, contentValues)
+
+                if (uri != null) {
+                    // Descarregar el PDF directament a un fitxer temporal
+                    val tempFile = File.createTempFile("temp_pdf", ".pdf", context.cacheDir)
+                    pdfRef.getFile(tempFile).await()
+
+                    // Copiar el contingut del fitxer temporal a la ubicació final
+                    resolver.openOutputStream(uri)?.use { outputStream ->
+                        tempFile.inputStream().copyTo(outputStream)
+                    }
+
+                    // Eliminar el fitxer temporal
+                    tempFile.delete()
+
+                    Log.d("FirebaseDataBaseService", "PDF descarregat correctament: $uri")
+                    uri
+                } else {
+                    Log.e("FirebaseDataBaseService", "No s'ha pogut crear el fitxer a la carpeta de descàrregues.")
+                    null
+                }
+            } catch (e: Exception) {
+                Log.e("FirebaseDataBaseService", "Error descarregant PDF: ${e.message}", e)
+                null
+            }
+        }
+    }
+
+    suspend fun getLastUsedManual(): String? {
+        return try {
+            val document = firestore.collection("ultimClickManual")
+                .document("lastManual")
+                .get()
+                .await()
+            document.getString("manualName")
+        } catch (e: Exception) {
+            Log.e("FirebaseDataBaseService", "Error obtenint l'últim manual utilitzat: ${e.message}")
+            null
+        }
+    }
+
+    suspend fun updateLastUsedManual(manualName: String): Boolean {
+        return try {
+            val data = hashMapOf("manualName" to manualName)
+            firestore.collection("ultimClickManual")
+                .document("lastManual")
+                .set(data)
+                .await()
+            true
+        } catch (e: Exception) {
+            Log.e("FirebaseDataBaseService", "Error guardant l'últim manual utilitzat: ${e.message}")
+            false
         }
     }
 

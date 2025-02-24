@@ -2,7 +2,6 @@ package com.deixebledenkaito.autotechmanuals.data.di
 
 import android.content.Context
 import com.deixebledenkaito.autotechmanuals.data.network.firebstore.FirebaseDataBaseService
-import com.deixebledenkaito.autotechmanuals.data.network.firebstore.SharedPreferencesHelper
 import com.deixebledenkaito.autotechmanuals.data.repository.UserRepository
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.ktx.firestore
@@ -33,13 +32,7 @@ object DataModule {
     @Provides
     fun providerFirebaseStorage(): FirebaseStorage = Firebase.storage
 
-    @Provides
-    @Singleton
-    fun provideSharedPreferencesHelper(
-        @ApplicationContext context: Context
-    ): SharedPreferencesHelper {
-        return SharedPreferencesHelper(context)
-    }
+
 
     @Provides
     @Singleton

@@ -19,7 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.rememberImagePainter
-import com.deixebledenkaito.autotechmanuals.domain.AportacioUser
+
 
 
 import com.deixebledenkaito.autotechmanuals.ui.Profile.ProfileViewModel

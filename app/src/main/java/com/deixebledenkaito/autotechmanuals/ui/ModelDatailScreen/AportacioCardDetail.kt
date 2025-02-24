@@ -1,5 +1,4 @@
-package com.deixebledenkaito.autotechmanuals.ui.aportacions
-
+package com.deixebledenkaito.autotechmanuals.ui.ModelDatailScreen
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -10,8 +9,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -29,19 +31,9 @@ import coil.compose.rememberImagePainter
 import com.deixebledenkaito.autotechmanuals.domain.AportacioUser
 
 
-
-
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
-
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Close
-
-
 @Composable
-fun AportacioCard(
-    aportacio: AportacioUser,
-    onDelete: (AportacioUser) -> Unit // Funció de callback per eliminar
+fun AportacioCardDetail(
+    aportacio: AportacioUser
 ) {
     Card(
         modifier = Modifier
@@ -50,8 +42,18 @@ fun AportacioCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Row {
-                Text(text = aportacio.data, style = MaterialTheme.typography.bodyMedium)
+            // Nom de l'usuari
+            Row (modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start){
+                Text(
+                    text = aportacio.userName,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                // Data de l'aportació
+                Text(text = aportacio.data, style = MaterialTheme.typography.titleMedium)
+                Spacer(modifier = Modifier.height(8.dp))
+
                 // Estrelles
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
                     Icon(imageVector = Icons.Default.Star, contentDescription = "Estrelles", tint = Color.Yellow)
@@ -59,7 +61,9 @@ fun AportacioCard(
                     Text(text = aportacio.stars.toString(), style = MaterialTheme.typography.bodyMedium)
                 }
             }
-            Spacer(modifier = Modifier.height(8.dp))
+
+            Spacer(modifier = Modifier.height(4.dp))
+
 
             // Scroll horitzontal per a múltiples imatges
             if (aportacio.imageUrls.isNotEmpty()) {
@@ -76,7 +80,7 @@ fun AportacioCard(
                             modifier = Modifier
                                 .width(100.dp)
                                 .height(100.dp)
-                                .padding(end = 8.dp)
+                                .padding(end = 6.dp)
                                 .clip(MaterialTheme.shapes.medium),
                             contentScale = ContentScale.Crop
                         )
@@ -85,19 +89,21 @@ fun AportacioCard(
                 Spacer(modifier = Modifier.height(4.dp))
             }
 
+            // Títol de l'aportació
             Text(text = aportacio.title, style = MaterialTheme.typography.titleMedium)
+            Spacer(modifier = Modifier.height(6.dp))
 
+            // Marca i model
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(text = "Marca:", style = MaterialTheme.typography.titleMedium)
                 Spacer(modifier = Modifier.width(4.dp))
-                Text(text = aportacio.manual, style = MaterialTheme.typography.titleSmall)
+                Text(text = aportacio.manual, style = MaterialTheme.typography.titleMedium)
                 Spacer(modifier = Modifier.width(20.dp))
                 Text(text = "Model:", style = MaterialTheme.typography.titleMedium)
                 Spacer(modifier = Modifier.width(4.dp))
-                Text(text = aportacio.model, style = MaterialTheme.typography.titleSmall)
+                Text(text = aportacio.model, style = MaterialTheme.typography.titleMedium)
             }
-
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(2.dp))
 
             // Secció per a PDF i Vídeo amb check o creu
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -116,19 +122,10 @@ fun AportacioCard(
                     tint = if (!aportacio.videoUrls.isNullOrEmpty()) Color.Green else Color.Red
                 )
             }
-
             Spacer(modifier = Modifier.height(4.dp))
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start) {
-                Text(text = "Definició: ${aportacio.descripcio}", style = MaterialTheme.typography.bodyMedium, maxLines = 4,  modifier = Modifier.width(200.dp))
-                // Botó d'eliminar
-                Row(modifier = Modifier.fillMaxWidth() .padding(top = 30.dp), horizontalArrangement = Arrangement.End ) {
-                    androidx.compose.material3.Button(
-                        onClick = { onDelete(aportacio) }
-                    ) {
-                        Text("Eliminar")
-                    }
-                }
-            }
+
+            // Descripció de l'aportació
+            Text(text = "Definició: ${aportacio.descripcio}", style = MaterialTheme.typography.bodyMedium, maxLines = 2)
         }
     }
 }

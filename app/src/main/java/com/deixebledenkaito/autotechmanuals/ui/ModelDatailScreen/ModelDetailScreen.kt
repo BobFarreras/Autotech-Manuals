@@ -41,7 +41,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.viewModelScope
 
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -56,7 +55,8 @@ import androidx.navigation.NavController
 import coil.compose.rememberImagePainter
 
 import com.deixebledenkaito.autotechmanuals.domain.Model
-import com.deixebledenkaito.autotechmanuals.ui.aportacions.AportacioCard
+
+
 import kotlinx.coroutines.launch
 
 
@@ -141,8 +141,8 @@ fun ModelDetailScreen(
                                 .clickable {
                                     // Aquí pots afegir la lògica per a cada targeta
                                     when (cardName) {
-                                        "Errors" -> { /* Navegar a la pantalla d'errors */ }
-                                        "Manuals" -> { /* Navegar a la pantalla de manuals */ }
+                                        "Errors" -> {  navController.navigate("errorsDelModel/$manualId/$modelId") }
+                                        "Manuals" -> { navController.navigate("descarregarManuals/$manualId/$modelId")}
                                         "Connexions" -> { /* Navegar a la pantalla de connexions */ }
                                         "Instal·lació" -> { /* Navegar a la pantalla d'instal·lació */ }
                                     }
@@ -224,11 +224,9 @@ fun ModelDetailScreen(
                                 )
                             }
 
-                            AportacioCard(
+                            AportacioCardDetail(
                                 aportacio = aportacio,
-                                onDelete = {
-                                    showDeleteConfirmation = true
-                                }
+
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                         }

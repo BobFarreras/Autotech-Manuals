@@ -15,7 +15,8 @@ data class AportacioUser(
     val videoUrls: String? = null,
     val data: String = "",
     val hora: String = "",
-    val user: String = ""
+    val user: String = "",
+    val userName: String = "" // Nom de l'usuari
 ) {
     fun toFirestore(): Map<String, Any> {
         return mapOf(
@@ -31,7 +32,8 @@ data class AportacioUser(
             "videoUrls" to (videoUrls ?: ""), // Guarda una cadena buida si videoUrl és null
             "data" to data,
             "hora" to hora,
-            "user" to user
+            "user" to user,
+            "userName" to userName // Afegim el nom de l'usuari
         )
     }
 }

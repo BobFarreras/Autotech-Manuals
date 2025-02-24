@@ -3,10 +3,10 @@ package com.deixebledenkaito.autotechmanuals.ui.home
 
 import ProfileScreen
 import android.net.Uri
-import android.os.Build
+
 import android.os.Bundle
-import android.view.View
-import android.view.WindowInsetsController
+import android.util.Log
+
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
@@ -49,19 +49,22 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
+
 import androidx.compose.ui.unit.dp
-import androidx.core.view.WindowCompat
+
 
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.privacysandbox.tools.core.model.Type
+
 import coil.compose.rememberImagePainter
 
 import com.deixebledenkaito.autotechmanuals.domain.Manuals
 import com.deixebledenkaito.autotechmanuals.ui.ModelDatailScreen.ModelDetailScreen
+import com.deixebledenkaito.autotechmanuals.ui.ModelDatailScreen.buttons.btnErrors.ErrorsDelModelScreen
+import com.deixebledenkaito.autotechmanuals.ui.ModelDatailScreen.buttons.btnManuals.DescarregarManualsScreen
+
 import com.deixebledenkaito.autotechmanuals.ui.aportacions.NovaAportacioScreen
 import com.deixebledenkaito.autotechmanuals.ui.homeManuals.HomeManualScreen
 import com.deixebledenkaito.autotechmanuals.ui.login.LoginScreen
@@ -86,6 +89,7 @@ fun HomeScreen(viewModel: HomeViewModel, navController: NavController) {
     val manuals by viewModel.manuals.collectAsState()
     val topManuals by viewModel.topManuals.collectAsState()
     val lastManual by viewModel.lastManual.collectAsState()
+    Log.d("HomeScreen", "Últim manual a la UI: ${lastManual?.nom}")
     val user by viewModel.user.collectAsState()
 
     var showAddManualDialog by remember { mutableStateOf(false) }
@@ -132,12 +136,12 @@ fun HomeScreen(viewModel: HomeViewModel, navController: NavController) {
                 .verticalScroll(rememberScrollState()) // Permet el scroll a tota la pantalla
                 .padding(8.dp)
         ) {
-            // Últim manual utilitzat
+            // Mostra l'últim manual utilitzat
             lastManual?.let { manual ->
                 Text("Últim manual utilitzat", style = MaterialTheme.typography.titleMedium)
                 Spacer(modifier = Modifier.height(8.dp))
                 ManualItem(manual = manual, onClick = {
-                    navController.navigate("homeManual/${manual.nom}") // Navegació amb argument
+                    navController.navigate("homeManual/${manual.nom}")
                 })
                 Spacer(modifier = Modifier.height(16.dp))
             }
@@ -200,6 +204,7 @@ fun HomeScreen(viewModel: HomeViewModel, navController: NavController) {
 }
 @Composable
 fun ManualItem(manual: Manuals, modifier: Modifier = Modifier, onClick: () -> Unit) {
+
     Card(
         modifier = modifier
             .fillMaxWidth()
@@ -335,6 +340,25 @@ fun AppNavigation() {
             val manualId = backStackEntry.arguments?.getString("manualId") ?: ""
             val modelId = backStackEntry.arguments?.getString("modelId") ?: ""
             ModelDetailScreen(
+                manualId = manualId,
+                modelId = modelId,
+                navController = navController
+            )
+        }
+        composable("errorsDelModel/{manualId}/{modelId}") { backStackEntry ->
+            val manualId = backStackEntry.arguments?.getString("manualId") ?: ""
+            val modelId = backStackEntry.arguments?.getString("modelId") ?: ""
+            ErrorsDelModelScreen(
+                manualId = manualId,
+                modelId = modelId,
+                navController = navController
+            )
+        }
+
+        composable("descarregarManuals/{manualId}/{modelId}") { backStackEntry ->
+            val manualId = backStackEntry.arguments?.getString("manualId") ?: ""
+            val modelId = backStackEntry.arguments?.getString("modelId") ?: ""
+            DescarregarManualsScreen(
                 manualId = manualId,
                 modelId = modelId,
                 navController = navController

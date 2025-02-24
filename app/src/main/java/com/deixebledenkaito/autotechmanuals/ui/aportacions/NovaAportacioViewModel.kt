@@ -75,6 +75,10 @@ class NovaAportacioViewModel @Inject constructor(
                 _isLoading.value = false // Finalitzar càrrega
                 return@launch
             }
+            // Obtenir les dades de l'usuari des de Firestore
+            val user = firebaseDataBaseService.getUser()
+            val userName = user?.name ?: "Usuari desconegut"
+
 
             // Generar l'ID com a data/hora/min/segons + el nom del títol
             val dateFormat = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault())
@@ -153,7 +157,8 @@ class NovaAportacioViewModel @Inject constructor(
                     videoUrls = videoUrls.joinToString(","), // Converteix la llista a una cadena separada per comes
                     data = data,
                     hora = hora,
-                    user = userId
+                    user = userId,
+                    userName = userName // Afegim el nom de l'usuari
                 )
                 Log.d("NovaAportacioViewModel", "Guardant aportació a Firestore: $aportacio")
                 val success = firebaseDataBaseService.addAportacio(userId, aportacio)

@@ -15,7 +15,8 @@ data class AportacioResponse(
     val videoUrls: String?, // Nou camp per a l'URL del vídeo (opcional)
     val data: String, // Nou camp per a la data
     val hora: String ,// Nou camp per a l'hora
-    val user:String
+    val user:String,
+    val userName: String
 ) {
     fun toDomain(): AportacioUser {
         return AportacioUser(
@@ -31,7 +32,8 @@ data class AportacioResponse(
             videoUrls = videoUrls, // Nou camp per al vídeo
             data = data,
             hora = hora,
-            user = user
+            user = user,
+            userName = userName
         )
     }
 }

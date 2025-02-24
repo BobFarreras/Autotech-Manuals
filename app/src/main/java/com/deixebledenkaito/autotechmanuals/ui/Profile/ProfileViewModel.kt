@@ -48,12 +48,12 @@ class ProfileViewModel @Inject constructor(
         viewModelScope.launch {
             val success = firebaseDataBaseService.eliminarAportacio(
                 userId = auth.currentUser?.uid ?: "",
-                aportacioId = aportacio.id
+                aportacio = aportacio // Passem l'objecte complet
             )
 
             if (success) {
-                // 🔄 Eliminar l'aportació de la UI
-                _userAportacions.value = _userAportacions.value?.filter { it.id != aportacio.id }!!
+                // Actualitzar la llista d'aportacions a la UI
+                _userAportacions.value = _userAportacions.value.filter { it.id != aportacio.id }
             }
         }
     }

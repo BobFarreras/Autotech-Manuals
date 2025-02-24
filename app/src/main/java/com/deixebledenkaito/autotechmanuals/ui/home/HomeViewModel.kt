@@ -2,6 +2,7 @@ package com.deixebledenkaito.autotechmanuals.ui.home
 
 
 import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -63,11 +64,22 @@ class HomeViewModel @Inject constructor(
         }
     }
 
+    // Carrega l'últim manual utilitzat
     fun loadLastManual() {
         viewModelScope.launch {
             val lastManualName = firebaseDataBaseService.getLastUsedManual()
             if (lastManualName != null) {
                 _lastManual.value = firebaseDataBaseService.getManualByName(lastManualName)
+            }
+        }
+    }
+
+    // Actualitza l'últim manual utilitzat
+    fun updateLastUsedManual(manualName: String) {
+        viewModelScope.launch {
+            val success = firebaseDataBaseService.updateLastUsedManual(manualName)
+            if (success) {
+                loadLastManual() // Recarrega l'últim manual després d'actualitzar-lo
             }
         }
     }
@@ -101,13 +113,7 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    // Funció per actualitzar l'últim manual utilitzat
-    fun updateLastUsedManual(manualName: String) {
-        viewModelScope.launch {
-            firebaseDataBaseService.updateLastUsedManual(manualName)
-            loadLastManual() // Recarregar l'últim manual utilitzat
-        }
-    }
+
 
     // Funció per afegir un nou manual
     fun addManual(nom: String, descripcio: String, imageUri: Uri) {
