@@ -17,6 +17,7 @@ import androidx.compose.runtime.getValue
 import androidx.lifecycle.viewmodel.compose.viewModel
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -29,11 +30,12 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 
+
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
+
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ExitToApp
 
@@ -48,9 +50,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
+
 
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 
 import androidx.navigation.NavController
@@ -61,11 +67,16 @@ import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberImagePainter
 
 import com.deixebledenkaito.autotechmanuals.domain.Manuals
+import com.deixebledenkaito.autotechmanuals.ui.ChangeNavigationBarColor.ChangeNavigationBarColor
 import com.deixebledenkaito.autotechmanuals.ui.ModelDatailScreen.ModelDetailScreen
 import com.deixebledenkaito.autotechmanuals.ui.ModelDatailScreen.buttons.btnErrors.ErrorsDelModelScreen
 import com.deixebledenkaito.autotechmanuals.ui.ModelDatailScreen.buttons.btnManuals.DescarregarManualsScreen
+import com.deixebledenkaito.autotechmanuals.ui.ModelDatailScreen.buttons.btnParametres.AjustListScreen
 
 import com.deixebledenkaito.autotechmanuals.ui.aportacions.NovaAportacioScreen
+import com.deixebledenkaito.autotechmanuals.ui.home.ui.theme.BackgroundColor
+import com.deixebledenkaito.autotechmanuals.ui.home.ui.theme.BackgroundTopAddBar
+import com.deixebledenkaito.autotechmanuals.ui.home.ui.theme.title
 import com.deixebledenkaito.autotechmanuals.ui.homeManuals.HomeManualScreen
 import com.deixebledenkaito.autotechmanuals.ui.login.LoginScreen
 import com.deixebledenkaito.autotechmanuals.ui.login.LoginViewModel
@@ -74,6 +85,9 @@ import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class HomeActivity : ComponentActivity() {
+
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -97,24 +111,51 @@ fun HomeScreen(viewModel: HomeViewModel, navController: NavController) {
     var showSearchDialog by remember { mutableStateOf(false) } // Estat per al diàleg de cerca
     var searchQuery by remember { mutableStateOf("") } // Estat per al terme de cerca
 
+
+    val MyCustomTextStyle = TextStyle(
+        fontSize = 18.sp, // Mida del text
+//        fontWeight = FontWeight.Bold, // Text en negreta
+        fontFamily = FontFamily.Default, // Font per defecte
+        color = Color.DarkGray , // Color del text
+        letterSpacing = 0.5.sp // Espaiat entre lletres
+    )
     LaunchedEffect(Unit) {
-        viewModel.loadManuals()
-        viewModel.loadTopManuals()
-        viewModel.loadLastManual()
-        viewModel.loadUser()
+        viewModel.loadAllData()
     }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Benvingut, ${user?.name ?: "Usuari"}") },
+                modifier = Modifier.height(110.dp),
+                title = {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        // Imatge de perfil (si existeix)
+                        user?.profileImageUrl?.let { imageUrl ->
+                            Image(
+                                painter = rememberImagePainter(imageUrl),
+                                contentDescription = "Imatge de perfil",
+                                contentScale = ContentScale.FillBounds, // Evita que la imatge es talli
+                                modifier = Modifier
+                                    .size(70.dp) // Mida de la imatge
+                                    .clip(CircleShape) // Forma rodona
+
+                            )
+                            Spacer(modifier = Modifier.width(8.dp)) // Espai entre la imatge i el text
+                        }
+                        // Text de benvinguda
+                        Text("Benvingut, ${user?.name ?: "Usuari"}")
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = BackgroundColor, // Fons de la TopAppBar
+                    titleContentColor = title // Color del text
+                ),
                 actions = {
                     IconButton(
                         onClick = {
                             viewModel.logout {
-                                // Navega a la pantalla de login
                                 navController.navigate("login") {
-                                    popUpTo("home") { inclusive = true } // Neteja el back stack
+                                    popUpTo("home") { inclusive = true }
                                 }
                             }
                         }
@@ -123,12 +164,14 @@ fun HomeScreen(viewModel: HomeViewModel, navController: NavController) {
                     }
                 }
             )
-        }, bottomBar = {
-            BottomToolbar(navController = navController, showAddManualDialog = {
-                showAddManualDialog = true}, showSearchDialog = {showSearchDialog = true}
-
-            )
-        }
+        },
+//        }, bottomBar = {
+//            BottomToolbar(navController = navController, showAddManualDialog = {
+//                showAddManualDialog = true}, showSearchDialog = {showSearchDialog = true}
+//
+//            )
+//        },
+        containerColor = BackgroundColor // Color de fons de tota l'aplicació
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -138,16 +181,18 @@ fun HomeScreen(viewModel: HomeViewModel, navController: NavController) {
         ) {
             // Mostra l'últim manual utilitzat
             lastManual?.let { manual ->
-                Text("Últim manual utilitzat", style = MaterialTheme.typography.titleMedium)
+                Text("Últim manual utilitzat", style = MyCustomTextStyle)
+
                 Spacer(modifier = Modifier.height(8.dp))
                 ManualItem(manual = manual, onClick = {
                     navController.navigate("homeManual/${manual.nom}")
                 })
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(22.dp))
             }
 
             // Llista de manuals més populars (horitzontal)
-            Text("Manuals més populars", style = MaterialTheme.typography.titleMedium)
+            Text("Manuals més populars", style = MyCustomTextStyle)
+
             Spacer(modifier = Modifier.height(8.dp))
             LazyRow {
                 items(topManuals) { manual ->
@@ -157,10 +202,11 @@ fun HomeScreen(viewModel: HomeViewModel, navController: NavController) {
                     Spacer(modifier = Modifier.width(8.dp))
                 }
             }
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(22.dp))
 
             // Llista de tots els manuals (vertical en graella de 2 columnes)
-            Text("Tots els manuals", style = MaterialTheme.typography.titleMedium)
+            Text("Tots els manuals", style = MyCustomTextStyle)
+
             Spacer(modifier = Modifier.height(8.dp))
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2), // 2 columnes
@@ -168,8 +214,8 @@ fun HomeScreen(viewModel: HomeViewModel, navController: NavController) {
                     .fillMaxWidth()
                     .heightIn(max = 600.dp), // Limita l'alçada màxima
                 contentPadding = PaddingValues(2.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 items(manuals) { manual ->
                     ManualItem(manual = manual, onClick = {
@@ -180,6 +226,7 @@ fun HomeScreen(viewModel: HomeViewModel, navController: NavController) {
                     })
                 }
             }
+
         }
     }
 
@@ -208,16 +255,18 @@ fun ManualItem(manual: Manuals, modifier: Modifier = Modifier, onClick: () -> Un
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .height(180.dp)
-            .padding(8.dp)
+            .height(150.dp)
+            .padding(4.dp)
             .clickable { onClick() },
+
         shape = RoundedCornerShape(8.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 12.dp)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(12.dp),
+                .background(Color.Black),
+
             horizontalAlignment = Alignment.CenterHorizontally // Centra el contingut horitzontalment
         ) {
             // Imatge del manual
@@ -226,26 +275,12 @@ fun ManualItem(manual: Manuals, modifier: Modifier = Modifier, onClick: () -> Un
                 contentDescription = manual.nom,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(100.dp)
+                    .fillMaxHeight()
                     .clip(RoundedCornerShape(8.dp)),
                 contentScale = ContentScale.FillBounds // Evita que la imatge es talli
             )
             Spacer(modifier = Modifier.height(6.dp))
-            // Nom del manual
-            Text(
-                text = manual.nom,
-                style = MaterialTheme.typography.titleLarge,
-                textAlign = TextAlign.Center, // Centrar el text
-                modifier = Modifier.fillMaxWidth()
-            )
 
-            // Descripció del manual
-//            Text(
-//                text = manual.descripcio,
-//                style = MaterialTheme.typography.bodyMedium,
-//                textAlign = TextAlign.Center, // Centrar el text
-//                modifier = Modifier.fillMaxWidth()
-//            )
         }
     }
 }
@@ -364,6 +399,9 @@ fun AppNavigation() {
                 navController = navController
             )
         }
+        composable("parametres") { navBackStackEntry ->
+            AjustListScreen()
+        }
     }
 }
 // Funció per mostrar la toolbar inferior
@@ -381,7 +419,7 @@ fun BottomToolbar(navController: NavController, showAddManualDialog: () -> Unit,
             .height(90.dp)
             .windowInsetsPadding(WindowInsets.navigationBars),
 
-        containerColor = Color.White,
+        containerColor = Color.White, // Fons de la TopAppBar,
 
         ) {
         items.forEach { item ->

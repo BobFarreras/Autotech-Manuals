@@ -6,6 +6,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ExitToApp
 
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
@@ -24,6 +25,8 @@ import coil.compose.rememberImagePainter
 
 import com.deixebledenkaito.autotechmanuals.ui.Profile.ProfileViewModel
 import com.deixebledenkaito.autotechmanuals.ui.aportacions.AportacioCard
+import com.deixebledenkaito.autotechmanuals.ui.home.ui.theme.BackgroundColor
+import com.deixebledenkaito.autotechmanuals.ui.home.ui.theme.title
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -42,10 +45,65 @@ fun ProfileScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Perfil") },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Tornar")
+                modifier = Modifier.height(110.dp),
+                title = {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        // Imatge de perfil (si existeix)
+                        user?.profileImageUrl?.let { imageUrl ->
+                            Image(
+                                painter = rememberImagePainter(imageUrl),
+                                contentDescription = "Imatge de perfil",
+                                contentScale = ContentScale.FillBounds, // Evita que la imatge es talli
+                                modifier = Modifier
+                                    .size(70.dp) // Mida de la imatge
+                                    .clip(CircleShape) // Forma rodona
+
+                            )
+                            Spacer(modifier = Modifier.width(8.dp)) // Espai entre la imatge i el text
+                        }
+                        Column {
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                text = user?.name ?: "Usuari",
+                                style = MaterialTheme.typography.titleLarge
+
+                            )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Icon(
+                                    imageVector = Icons.Default.Star,
+                                    contentDescription = "Estrelles",
+                                    tint = Color.Yellow
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = user?.stars?.toString() ?: "0",
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = user?.description ?: "Descripció de l'usuari",
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+
+                        }
+                        
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = BackgroundColor, // Fons de la TopAppBar
+                    titleContentColor = title // Color del text
+                ),
+                actions = {
+                    IconButton(
+                        onClick = {
+                            println("A fet click")
+                        }
+                    ) {
+                        Icon(Icons.Default.ExitToApp, contentDescription = "Tancar sessió")
                     }
                 }
             )
@@ -64,48 +122,8 @@ fun ProfileScreen(
                 .fillMaxSize()
                 .padding(16.dp)
         ) {
-            item {
-                // Informació de l'usuari
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Image(
-                        painter = rememberImagePainter(user?.profileImageUrl),
-                        contentDescription = "Imatge de perfil",
-                        modifier = Modifier
-                            .size(80.dp)
-                            .clip(CircleShape),
-                        contentScale = ContentScale.Crop
-                    )
-                    Spacer(modifier = Modifier.width(16.dp))
-                    Column {
-                        Text(
-                            text = user?.name ?: "Usuari",
-                            style = MaterialTheme.typography.titleLarge
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = user?.description ?: "Descripció de l'usuari",
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                imageVector = Icons.Default.Star,
-                                contentDescription = "Estrelles",
-                                tint = Color.Yellow
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(
-                                text = user?.stars?.toString() ?: "0",
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                        }
-                    }
-                }
-                Spacer(modifier = Modifier.height(16.dp))
-            }
+
+
 
 
             items(userAportacions) { aportacio ->

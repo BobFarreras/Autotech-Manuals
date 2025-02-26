@@ -7,6 +7,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -79,6 +80,7 @@ fun ModelDetailScreen(
     val isLoading by viewModel.isLoading.collectAsState()
     val error by viewModel.error.collectAsState()
 
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -123,9 +125,9 @@ fun ModelDetailScreen(
                 // Secció superior: Imatge i descripció del model
                 ModelHeader(model = model!!)
 
-                Spacer(modifier = Modifier.height(16.dp))
 
-                // Quatre targetes
+
+                // 6 targetes
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(2),
                     modifier = Modifier.padding(8.dp),
@@ -133,7 +135,7 @@ fun ModelDetailScreen(
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    items(listOf("Errors", "Manuals", "Connexions", "Instal·lació")) { cardName ->
+                    items(listOf("Errors", "Manuals", "Connexions", "Instal·lació","Paràmetres", "Kits Renove")) { cardName ->
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -145,6 +147,8 @@ fun ModelDetailScreen(
                                         "Manuals" -> { navController.navigate("descarregarManuals/$manualId/$modelId")}
                                         "Connexions" -> { /* Navegar a la pantalla de connexions */ }
                                         "Instal·lació" -> { /* Navegar a la pantalla d'instal·lació */ }
+                                        "Paràmetres" -> { navController.navigate("parametres") }
+                                        "Kits Renove" -> { /* Navegar a la pantalla d'instal·lació */ }
                                     }
                                 },
                             shape = RoundedCornerShape(8.dp),
@@ -167,13 +171,13 @@ fun ModelDetailScreen(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+
 
                 // Llista d'aportacions
                 Text(
                     text = "Aportacions",
                     style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.padding(16.dp)
+                    modifier = Modifier.padding(8.dp)
                 )
 
                 if (aportacions.isEmpty()) {
@@ -188,7 +192,7 @@ fun ModelDetailScreen(
                     LazyColumn(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 16.dp)
+                            .padding(horizontal = 8.dp)
                     ) {
                         items(aportacions) { aportacio ->
                             var showDeleteConfirmation by remember { mutableStateOf(false) }
@@ -245,15 +249,15 @@ fun ModelHeader(model: Model?) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp),
-        shape = RoundedCornerShape(8.dp),
+            .padding(6.dp),
+        shape = RoundedCornerShape(6.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
-        Column(
+        Row (
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .padding(8.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
             // Imatge del manual
             Image(
@@ -265,7 +269,7 @@ fun ModelHeader(model: Model?) {
                 contentScale = ContentScale.FillBounds
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(4.dp))
 
             // Descripció de l'aportació (amb limitació de línies)
             var showFullDescription by remember { mutableStateOf(false) }
@@ -274,9 +278,10 @@ fun ModelHeader(model: Model?) {
                 text = model.descripcio,
                 style = MaterialTheme.typography.bodyMedium,
                 textAlign = TextAlign.Center,
-                maxLines = 3,
+                maxLines = 6,
                 overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.clickable { showFullDescription = !showFullDescription }
+                modifier = Modifier.clickable { showFullDescription = !showFullDescription }.padding(12.dp)
+
             )
 
             // Diàleg per mostrar la descripció completa

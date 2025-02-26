@@ -119,8 +119,8 @@ fun ErrorsDelModelScreen(
                             .padding(16.dp)
                     ) {
                         Text(
-                            text = "Descripció de l'error: ${error!!.descripcio}",
-                            style = MaterialTheme.typography.bodyMedium
+                            text = error!!.descripcio,
+                            style = MaterialTheme.typography.bodyLarge
                         )
                     }
                 }

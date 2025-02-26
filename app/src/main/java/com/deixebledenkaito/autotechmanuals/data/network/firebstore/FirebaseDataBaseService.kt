@@ -448,6 +448,29 @@ class FirebaseDataBaseService @Inject constructor(
         }
     }
 
+//    suspend fun inserirErrors(manualId: String, modelId: String) {
+//        val errors = listOf(
+//            ErrorData("60", "DCU100 Error en la unidad de control DCU100."),
+//            ErrorData("61", "Acumulador Acumulador descargado.")
+//        )
+//
+//        for (error in errors) {
+//            val errorData = hashMapOf(
+//                "numero" to error.numero,
+//                "descripcio" to error.descripcio
+//            )
+//
+//            firestore.collection("manuals")
+//                .document(manualId)
+//                .collection("models")
+//                .document(modelId)
+//                .collection("errors")
+//                .document(error.numero) // Usem el número com a ID del document
+//                .set(errorData)
+//                .await()
+//        }
+//    }
+//    data class ErrorData(val numero: String, val descripcio: String)
 
 
 
