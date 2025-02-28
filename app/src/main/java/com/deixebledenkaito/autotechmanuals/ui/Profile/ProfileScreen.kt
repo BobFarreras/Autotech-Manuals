@@ -1,4 +1,8 @@
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -38,6 +42,17 @@ fun ProfileScreen(
     val user by viewModel.user.collectAsState()
     val userAportacions by viewModel.userAportacions.collectAsState()
 
+    // Estat per controlar si es mostra el diàleg de selecció d'imatge
+    var showImagePickerDialog by remember { mutableStateOf(false) }
+
+    // Launcher per obrir la galeria
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let { selectedImageUri ->
+            viewModel.updateProfileImage(selectedImageUri)
+        }
+    }
     LaunchedEffect(Unit) {
         viewModel.loadUser()
     }
@@ -57,6 +72,7 @@ fun ProfileScreen(
                                 modifier = Modifier
                                     .size(70.dp) // Mida de la imatge
                                     .clip(CircleShape) // Forma rodona
+                                    .clickable { showImagePickerDialog = true } // Obrir diàleg en fer clic
 
                             )
                             Spacer(modifier = Modifier.width(8.dp)) // Espai entre la imatge i el text
@@ -96,16 +112,8 @@ fun ProfileScreen(
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = BackgroundColor, // Fons de la TopAppBar
                     titleContentColor = title // Color del text
-                ),
-                actions = {
-                    IconButton(
-                        onClick = {
-                            println("A fet click")
-                        }
-                    ) {
-                        Icon(Icons.Default.ExitToApp, contentDescription = "Tancar sessió")
-                    }
-                }
+                )
+
             )
         },
         floatingActionButton = {
@@ -131,6 +139,29 @@ fun ProfileScreen(
                 Spacer(modifier = Modifier.height(8.dp))
             }
         }
+    }
+    // Diàleg per seleccionar una nova imatge
+    if (showImagePickerDialog) {
+        AlertDialog(
+            onDismissRequest = { showImagePickerDialog = false },
+            title = { Text("Canviar imatge de perfil") },
+            text = { Text("Selecciona una nova imatge de la galeria.") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showImagePickerDialog = false
+                        launcher.launch("image/*") // Obrir la galeria
+                    }
+                ) {
+                    Text("Seleccionar imatge")
+                }
+            },
+            dismissButton = {
+                Button(onClick = { showImagePickerDialog = false }) {
+                    Text("Cancel·lar")
+                }
+            }
+        )
     }
 }
 

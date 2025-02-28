@@ -33,6 +33,8 @@ import com.deixebledenkaito.autotechmanuals.ui.home.HomeActivity
 import com.deixebledenkaito.autotechmanuals.ui.login.LoginActivity
 
 import dagger.hilt.android.AndroidEntryPoint
+import org.opencv.android.OpenCVLoader
+
 import androidx.hilt.navigation.compose.hiltViewModel as hiltViewModel1
 
 @SuppressLint("CustomSplashScreen")
@@ -45,6 +47,12 @@ class SplashActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
+            // Inicialitza OpenCV
+            if (!OpenCVLoader.initDebug()) {
+                Log.e("OpenCV", "Error en inicialitzar OpenCV")
+            } else {
+                Log.d("OpenCV", "OpenCV inicialitzat correctament")
+            }
             SplashScreen(
                 onNavigateToHome = { navigateToHome() },
                 onNavigateToLogin = { navigateToLogin() },

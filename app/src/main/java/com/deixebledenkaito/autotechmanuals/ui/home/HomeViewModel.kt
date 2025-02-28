@@ -115,24 +115,24 @@ class HomeViewModel @Inject constructor(
 
 
     // Funció per afegir un nou manual
-    fun addManual(nom: String, descripcio: String, imageUri: Uri) {
-        viewModelScope.launch {
-            try {
-                // Puja la imatge a Firebase Storage i obté l'URL
-                val imageUrl = firebaseDataBaseService.uploadAndDownloadImage(imageUri)
-
-                // Afegeix el manual a Firestore
-                val success = firebaseDataBaseService.afegirManual(nom, descripcio, imageUrl, 0)
-
-                if (success) {
-                    loadManuals() // Recarregar la llista de manuals
-                }
-            } catch (e: Exception) {
-                // Manejar l'error
-                println("Error afegint el manual: ${e.message}")
-            }
-        }
-    }
+//    fun addManual(nom: String, descripcio: String, imageUri: Uri) {
+//        viewModelScope.launch {
+//            try {
+//                // Puja la imatge a Firebase Storage i obté l'URL
+//                val imageUrl = firebaseDataBaseService.uploadAndDownloadImage(imageUri)
+//
+//                // Afegeix el manual a Firestore
+//                val success = firebaseDataBaseService.afegirManual(nom, descripcio, imageUrl, 0)
+//
+//                if (success) {
+//                    loadManuals() // Recarregar la llista de manuals
+//                }
+//            } catch (e: Exception) {
+//                // Manejar l'error
+//                println("Error afegint el manual: ${e.message}")
+//            }
+//        }
+//    }
 
 
 

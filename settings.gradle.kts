@@ -12,13 +12,14 @@ pluginManagement {
     }
 }
 dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
         google()
-        mavenCentral()
+        mavenCentral() // Això ha d'estar aquí
     }
 }
 
+
 rootProject.name = "Autotech Manuals"
 include(":app")
- 
+
+include(":sdk")

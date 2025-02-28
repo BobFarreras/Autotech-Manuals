@@ -145,9 +145,9 @@ class FirebaseDataBaseService @Inject constructor(
         }
     }
     // Funció per pujar i descarregar una imatge
-    suspend fun uploadAndDownloadImage(uri: Uri): String {
+    suspend fun uploadAndDownloadImage(uri: Uri, usuariId: String): String {
         return suspendCancellableCoroutine { continuation ->
-            val reference = storage.reference.child("manuals/${uri.lastPathSegment}")
+            val reference = storage.reference.child("usuaris/${usuariId}/imgPerfil/perfil.png")
             reference.putFile(uri, createMetaData()).addOnSuccessListener { taskSnapshot ->
                 taskSnapshot.storage.downloadUrl.addOnSuccessListener { uri ->
                     continuation.resume(uri.toString())
@@ -472,7 +472,18 @@ class FirebaseDataBaseService @Inject constructor(
 //    }
 //    data class ErrorData(val numero: String, val descripcio: String)
 
-
+    suspend fun updateUserProfileImage(userId: String, imageUrl: String): Boolean {
+        return try {
+            firestore.collection(USUARIS_PATH)
+                .document(userId)
+                .update("profileImageUrl", imageUrl)
+                .await()
+            true // Retornem true si s'ha actualitzat correctament
+        } catch (e: Exception) {
+            Log.e("FirebaseDataBaseService", "Error actualitzant la imatge de perfil: ${e.message}")
+            false // Retornem false si hi ha hagut un error
+        }
+    }
 
 
 

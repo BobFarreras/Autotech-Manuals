@@ -1,27 +1,27 @@
 package com.deixebledenkaito.autotechmanuals.ui.home
-
-
 import ProfileScreen
-import android.net.Uri
 
 import android.os.Bundle
 import android.util.Log
-
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.rememberLauncherForActivityResult
+
 import androidx.activity.compose.setContent
-import androidx.activity.result.contract.ActivityResultContracts
+
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.viewmodel.compose.viewModel
-
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -29,16 +29,12 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-
-
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-
 import androidx.compose.material.icons.Icons
-
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.ExitToApp
 
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -49,45 +45,38 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.layout.ContentScale
+
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
-
-
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-
-
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-
 import coil.compose.rememberImagePainter
-
+import com.deixebledenkaito.autotechmanuals.R
 import com.deixebledenkaito.autotechmanuals.domain.Manuals
-import com.deixebledenkaito.autotechmanuals.ui.ChangeNavigationBarColor.ChangeNavigationBarColor
 import com.deixebledenkaito.autotechmanuals.ui.ModelDatailScreen.ModelDetailScreen
 import com.deixebledenkaito.autotechmanuals.ui.ModelDatailScreen.buttons.btnErrors.ErrorsDelModelScreen
 import com.deixebledenkaito.autotechmanuals.ui.ModelDatailScreen.buttons.btnManuals.DescarregarManualsScreen
 import com.deixebledenkaito.autotechmanuals.ui.ModelDatailScreen.buttons.btnParametres.AjustListScreen
-
 import com.deixebledenkaito.autotechmanuals.ui.aportacions.NovaAportacioScreen
+import com.deixebledenkaito.autotechmanuals.ui.autoMidesImg.CameraSizeDetectorApp
+
+
 import com.deixebledenkaito.autotechmanuals.ui.home.ui.theme.BackgroundColor
-import com.deixebledenkaito.autotechmanuals.ui.home.ui.theme.BackgroundTopAddBar
 import com.deixebledenkaito.autotechmanuals.ui.home.ui.theme.title
 import com.deixebledenkaito.autotechmanuals.ui.homeManuals.HomeManualScreen
 import com.deixebledenkaito.autotechmanuals.ui.login.LoginScreen
 import com.deixebledenkaito.autotechmanuals.ui.login.LoginViewModel
-
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class HomeActivity : ComponentActivity() {
-
-
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -95,8 +84,6 @@ class HomeActivity : ComponentActivity() {
         }
     }
 }
-
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(viewModel: HomeViewModel, navController: NavController) {
@@ -110,7 +97,8 @@ fun HomeScreen(viewModel: HomeViewModel, navController: NavController) {
 
     var showSearchDialog by remember { mutableStateOf(false) } // Estat per al diàleg de cerca
     var searchQuery by remember { mutableStateOf("") } // Estat per al terme de cerca
-
+    // Estat per controlar si el menú desplegable està obert
+    var showMenu by remember { mutableStateOf(false) }
 
     val MyCustomTextStyle = TextStyle(
         fontSize = 18.sp, // Mida del text
@@ -151,26 +139,132 @@ fun HomeScreen(viewModel: HomeViewModel, navController: NavController) {
                     titleContentColor = title // Color del text
                 ),
                 actions = {
+                    // Icona per obrir el menú desplegable
                     IconButton(
-                        onClick = {
-                            viewModel.logout {
-                                navController.navigate("login") {
-                                    popUpTo("home") { inclusive = true }
-                                }
-                            }
-                        }
+                        onClick = { showMenu = !showMenu }
                     ) {
-                        Icon(Icons.Default.ExitToApp, contentDescription = "Tancar sessió")
+                        Icon(Icons.Default.MoreVert, contentDescription = "Més opcions")
+                    }
+
+                    // Animació per al menú desplegable
+                    // Animació per al menú desplegable
+                    AnimatedVisibility(
+                        visible = showMenu,
+                        enter = fadeIn(animationSpec = tween(300)) + scaleIn(
+                            initialScale = 0.5f, // Comença petit
+                            transformOrigin = TransformOrigin(1f, 0f), // Parteix de la part inferior dreta
+                            animationSpec = tween(200)
+                        ),
+                        exit = fadeOut(animationSpec = tween(300)) + scaleOut(
+                            targetScale = 0.5f, // Es fa petit
+                            transformOrigin = TransformOrigin(1f, 0f), // Acaba a la part inferior dreta
+                            animationSpec = tween(200)
+                        ),
+                        modifier = Modifier.background(Color.White) // Fons blanc
+                    ) {
+                        Spacer(modifier = Modifier.height(32.dp))
+                        // Menú desplegable
+                        DropdownMenu(
+                            expanded = showMenu,
+                            onDismissRequest = { showMenu = false },
+                            modifier = Modifier.background(Color.White) // Fons blanc
+                        ) {
+                            // Opció: Tancar sessió
+                            DropdownMenuItem(
+                                text = {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Icon(
+                                            painter = painterResource(id = R.drawable.ic_logout),
+                                            contentDescription = "Tancar sessió",
+                                            tint = Color.Black
+                                        )
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text(
+                                            text = "Tancar sessió",
+                                            fontSize = 16.sp // Text més gran
+                                        )
+                                    }
+                                },
+                                onClick = {
+                                    viewModel.logout {
+                                        navController.navigate("login") {
+                                            popUpTo("home") { inclusive = true }
+                                        }
+                                    }
+                                    showMenu = false
+                                }
+                            )
+
+                            // Opció: Perfil
+                            DropdownMenuItem(
+                                text = {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Icon(
+                                            painter = painterResource(id = R.drawable.ic_profile),
+                                            contentDescription = "Perfil",
+                                            tint = Color.Black
+                                        )
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text(
+                                            text = "Perfil",
+                                            fontSize = 16.sp // Text més gran
+                                        )
+                                    }
+                                },
+                                onClick = {
+                                    navController.navigate("profile")
+                                    showMenu = false
+                                }
+                            )
+
+                            // Opció: Configuració
+                            DropdownMenuItem(
+                                text = {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Icon(
+                                            painter = painterResource(id = R.drawable.ic_settings),
+                                            contentDescription = "Configuració",
+                                            tint = Color.Black
+                                        )
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text(
+                                            text = "CameraIA",
+                                            fontSize = 16.sp // Text més gran
+                                        )
+                                    }
+                                },
+                                onClick = {
+                                    navController.navigate("camera")
+                                    showMenu = false
+                                }
+                            )
+
+                            // Opció: Buscar
+                            DropdownMenuItem(
+                                text = {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Icon(
+                                            painter = painterResource(id = R.drawable.ic_search),
+                                            contentDescription = "Buscar",
+                                            tint = Color.Black
+                                        )
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text(
+                                            text = "Buscar",
+                                            fontSize = 16.sp // Text més gran
+                                        )
+                                    }
+                                },
+                                onClick = {
+                                    showSearchDialog = true
+                                    showMenu = false
+                                }
+                            )
+                        }
                     }
                 }
             )
         },
-//        }, bottomBar = {
-//            BottomToolbar(navController = navController, showAddManualDialog = {
-//                showAddManualDialog = true}, showSearchDialog = {showSearchDialog = true}
-//
-//            )
-//        },
         containerColor = BackgroundColor // Color de fons de tota l'aplicació
     ) { paddingValues ->
         Column(
@@ -230,16 +324,6 @@ fun HomeScreen(viewModel: HomeViewModel, navController: NavController) {
         }
     }
 
-    if (showAddManualDialog) {
-        AddManualDialog(
-            onDismiss = { showAddManualDialog = false },
-            onConfirm = { nom, descripcio, imageUri ->
-                viewModel.addManual(nom, descripcio, imageUri)
-                showAddManualDialog = false
-            }
-        )
-    }
-
     if (showSearchDialog) {
         SearchDialog(
             onDismiss = { showSearchDialog = false },
@@ -285,60 +369,6 @@ fun ManualItem(manual: Manuals, modifier: Modifier = Modifier, onClick: () -> Un
     }
 }
 
-
-@Composable
-fun AddManualDialog(
-    onDismiss: () -> Unit,
-    onConfirm: (String, String, Uri) -> Unit,
-) {
-    var nom by remember { mutableStateOf("") }
-    var descripcio by remember { mutableStateOf("") }
-    var imageUri by remember { mutableStateOf<Uri?>(null) }
-
-    val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
-    ) { uri: Uri? ->
-        uri?.let { imageUri = it }
-    }
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("Afegir manual") },
-        text = {
-            Column {
-                TextField(
-                    value = nom,
-                    onValueChange = { nom = it },
-                    label = { Text("Nom del manual") }
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                TextField(
-                    value = descripcio,
-                    onValueChange = { descripcio = it },
-                    label = { Text("Descripció del manual") }
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Button(onClick = { launcher.launch("image/*") }) {
-                    Text("Seleccionar imatge")
-                }
-            }
-        },
-        confirmButton = {
-            Button(onClick = {
-                imageUri?.let { uri ->
-                    onConfirm(nom, descripcio, uri)
-                }
-            }) {
-                Text("Afegir")
-            }
-        },
-        dismissButton = {
-            Button(onClick = onDismiss) {
-                Text("Cancel·lar")
-            }
-        }
-    )
-}
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
@@ -367,10 +397,12 @@ fun AppNavigation() {
         composable("profile") {
             ProfileScreen(navController = navController)
         }
+        composable("camera") {
+            CameraSizeDetectorApp(navController = navController)
+        }
         composable("novaAportacio") { navBackStackEntry ->
             NovaAportacioScreen(navController = navController)
         }
-        // Defineix la ruta per a ModelDetailScreen
         composable("modelDetail/{manualId}/{modelId}") { backStackEntry ->
             val manualId = backStackEntry.arguments?.getString("manualId") ?: ""
             val modelId = backStackEntry.arguments?.getString("modelId") ?: ""
@@ -389,7 +421,6 @@ fun AppNavigation() {
                 navController = navController
             )
         }
-
         composable("descarregarManuals/{manualId}/{modelId}") { backStackEntry ->
             val manualId = backStackEntry.arguments?.getString("manualId") ?: ""
             val modelId = backStackEntry.arguments?.getString("modelId") ?: ""
@@ -402,44 +433,7 @@ fun AppNavigation() {
         composable("parametres") { navBackStackEntry ->
             AjustListScreen()
         }
-    }
-}
-// Funció per mostrar la toolbar inferior
-@Composable
-fun BottomToolbar(navController: NavController, showAddManualDialog: () -> Unit, showSearchDialog: () -> Unit) {
-    val items = listOf(
-        BottomNavItem.Home,
-        BottomNavItem.Search,
-        BottomNavItem.Create,
-        BottomNavItem.Profile
-    )
 
-    BottomAppBar(
-        modifier = Modifier
-            .height(90.dp)
-            .windowInsetsPadding(WindowInsets.navigationBars),
-
-        containerColor = Color.White, // Fons de la TopAppBar,
-
-        ) {
-        items.forEach { item ->
-            IconButton(
-                onClick = {
-                    when (item) {
-                        is BottomNavItem.Home -> navController.popBackStack() // tornar enrrera
-                        is BottomNavItem.Profile -> navController.navigate("profile")
-                        is BottomNavItem.Search -> showSearchDialog()
-                        is BottomNavItem.Create -> showAddManualDialog()
-                    }
-                },
-                modifier = Modifier.weight(1f)
-            ) {
-                Icon(
-                    imageVector = item.icon,
-                    contentDescription = item.label
-                )
-            }
-        }
     }
 }
 
@@ -524,5 +518,7 @@ fun SearchResultsScreen(
         }
     }
 }
+
+
 
 

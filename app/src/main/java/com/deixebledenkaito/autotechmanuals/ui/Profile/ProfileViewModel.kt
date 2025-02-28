@@ -1,5 +1,6 @@
 package com.deixebledenkaito.autotechmanuals.ui.Profile
 
+import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -58,7 +59,28 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
+    // Funció per actualitzar la imatge de perfil
+    fun updateProfileImage(imageUri: Uri) {
+        viewModelScope.launch {
+            try {
+                // Pujar la nova imatge a Firebase Storage
+                val imageUrl = firebaseDataBaseService.uploadAndDownloadImage(imageUri,auth.currentUser?.uid ?: "")
 
+                // Actualitzar la imatge de perfil a Firestore
+                val success = firebaseDataBaseService.updateUserProfileImage(
+                    userId = auth.currentUser?.uid ?: "",
+                    imageUrl = imageUrl
+                )
+
+                if (success) {
+                    // Actualitzar l'estat de l'usuari a la UI
+                    _user.value = _user.value?.copy(profileImageUrl = imageUrl)
+                }
+            } catch (e: Exception) {
+                println("Error actualitzant la imatge de perfil: ${e.message}")
+            }
+        }
+    }
 
 
 }

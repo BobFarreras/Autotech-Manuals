@@ -2,5 +2,8 @@
 <paths xmlns:android="http://schemas.android.com/apk/res/android">
     <external-cache-path name="temp_images" path="." />
     <external-cache-path name="temp_videos" path="." />
-    <external-cache-path name="pdf_cache" path="." />
+    <!-- Defineix la ruta per a l'emmagatzematge extern -->
+    <external-files-path
+        name="images"
+        path="images/" />
 </paths>
