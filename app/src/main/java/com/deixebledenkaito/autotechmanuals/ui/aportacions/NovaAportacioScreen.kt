@@ -66,7 +66,7 @@ import androidx.navigation.NavController
 import coil.compose.rememberImagePainter
 import com.deixebledenkaito.autotechmanuals.R
 import com.deixebledenkaito.autotechmanuals.ui.Profile.SeleccionarImatgeDialog
-import com.deixebledenkaito.autotechmanuals.ui.videoPlayer.VideoPlayer
+import com.deixebledenkaito.autotechmanuals.ui.funcionsExternes.videoPlayer.VideoPlayer
 import kotlinx.coroutines.delay
 import java.io.File
 

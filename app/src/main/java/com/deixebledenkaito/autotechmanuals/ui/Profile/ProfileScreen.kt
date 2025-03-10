@@ -9,8 +9,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.ExitToApp
 
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
@@ -28,7 +26,7 @@ import coil.compose.rememberImagePainter
 
 
 import com.deixebledenkaito.autotechmanuals.ui.Profile.ProfileViewModel
-import com.deixebledenkaito.autotechmanuals.ui.aportacions.AportacioCard
+import com.deixebledenkaito.autotechmanuals.ui.aportacions.CardAportacions.AportacioCard
 import com.deixebledenkaito.autotechmanuals.ui.home.ui.theme.BackgroundColor
 import com.deixebledenkaito.autotechmanuals.ui.home.ui.theme.title
 

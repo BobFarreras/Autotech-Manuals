@@ -5,4 +5,5 @@
     <string name="title_activity_home">HomeActivity</string>
     <string name="title_activity_signup">SignupActivity</string>
     <string name="title_activity_home_manuals">HomeManualsActivity</string>
+    <string name="title_activity_pdf_viewer">PdfViewerActivity</string>
 </resources>

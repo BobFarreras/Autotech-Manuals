@@ -151,14 +151,17 @@ class NovaAportacioViewModel @Inject constructor(
                     title = title,
                     descripcio = descripcio,
                     imageUrls = imatgeUrls.joinToString(","), // Converteix la llista a una cadena separada per comes
-                    stars = 0,
+                    likes = 0,
+                    noLikes = 0,
                     usageCount = 0,
                     pdfUrls = pdfUrls.joinToString(","), // Converteix la llista a una cadena separada per comes
                     videoUrls = videoUrls.joinToString(","), // Converteix la llista a una cadena separada per comes
                     data = data,
                     hora = hora,
                     user = userId,
-                    userName = userName // Afegim el nom de l'usuari
+                    userName = userName, // Afegim el nom de l'usuari
+                    usersWhoLiked = mutableListOf<String>(), // Inicialitza com a MutableList
+                    usersWhoDisliked = mutableListOf<String>(), // Inicialitza com a MutableList
                 )
                 Log.d("NovaAportacioViewModel", "Guardant aportació a Firestore: $aportacio")
                 val success = firebaseDataBaseService.addAportacio(userId, aportacio)

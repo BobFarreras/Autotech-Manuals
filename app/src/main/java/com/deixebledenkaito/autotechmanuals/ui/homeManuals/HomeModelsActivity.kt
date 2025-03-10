@@ -3,7 +3,7 @@ package com.deixebledenkaito.autotechmanuals.ui.homeManuals
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
+
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -11,7 +11,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
+
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -22,9 +22,9 @@ import androidx.compose.foundation.lazy.grid.items
 
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
+
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.ExitToApp
+
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -58,6 +58,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.deixebledenkaito.autotechmanuals.domain.Manuals
 
+// AIXOO ES DINTRE DEL MANUAL AMB ELS DIFERENTS MODELS
 @AndroidEntryPoint
 class HomeManualsActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -81,7 +82,7 @@ fun HomeManualScreen(
     val isLoading by viewModel.isLoading.collectAsState()
     val error by viewModel.error.collectAsState()
     val manual by viewModel.manual.collectAsState()
-    val aportacionsPerModel by viewModel.aportacionsPerModel.collectAsState()
+
 
 
     // Carregar models i manual quan la pantalla s'obri
@@ -151,10 +152,6 @@ fun HomeManualScreen(
                                     navController.navigate("modelDetail/${manualName}/${model.id}")
                                 }
                             )
-
-                            // Llista d'aportacions per a aquest model
-                            val aportacions = aportacionsPerModel[model.id] ?: emptyList()
-                            AportacionsList(aportacions = aportacions)
                         }
                     }
                 }
@@ -216,7 +213,7 @@ fun ManualHeader(manual: Manuals?) {
         ) {
             // Imatge del manual
             Image(
-                painter = rememberImagePainter(manual.imageUrl),
+                painter = rememberImagePainter(manual.imageResId),
                 contentDescription = "Manual Image",
                 modifier = Modifier
                     .size(120.dp)

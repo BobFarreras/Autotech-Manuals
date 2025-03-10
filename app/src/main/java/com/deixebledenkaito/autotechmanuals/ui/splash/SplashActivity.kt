@@ -30,7 +30,7 @@ import androidx.compose.ui.unit.dp
 
 import com.deixebledenkaito.autotechmanuals.ui.home.HomeActivity
 
-import com.deixebledenkaito.autotechmanuals.ui.login.LoginActivity
+import com.deixebledenkaito.autotechmanuals.ui.auth.login.LoginActivity
 
 import dagger.hilt.android.AndroidEntryPoint
 import org.opencv.android.OpenCVLoader
@@ -41,8 +41,6 @@ import androidx.hilt.navigation.compose.hiltViewModel as hiltViewModel1
 @AndroidEntryPoint
 
 class SplashActivity : ComponentActivity() {
-
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

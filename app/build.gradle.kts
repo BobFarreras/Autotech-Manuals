@@ -47,6 +47,7 @@ android {
     repositories {
         google()
         mavenCentral()
+
     }
 }
 
@@ -107,6 +108,11 @@ dependencies {
     implementation ("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
     implementation ("androidx.lifecycle:lifecycle-runtime-compose:2.8.7")
     implementation ("androidx.compose.runtime:runtime-livedata:1.7.8")
+
+    implementation ("androidx.compose.runtime:runtime:1.7.8")
+    implementation ("androidx.compose.foundation:foundation:1.7.8")
+
+
 //    PER REPRODUIUR VIDEOS A ANDROID
     implementation ("androidx.media3:media3-exoplayer:1.5.1")
     implementation ("androidx.media3:media3-ui:1.5.1")
@@ -122,15 +128,18 @@ dependencies {
     implementation ("androidx.camera:camera-lifecycle:1.3.0")
     implementation ("androidx.camera:camera-view:1.3.0")
     implementation ("androidx.camera:camera-extensions:1.3.0")
-//Claude m'ha donat aquestes dependenceies'
 
+//Claude m'ha donat aquestes dependenceies'
     implementation ("com.google.mlkit:object-detection:17.0.2")
     implementation ("com.google.mlkit:vision-common:17.3.0")
     implementation ("com.google.mlkit:image-labeling:17.0.0")
 
-
-
+//json
+    implementation("com.google.code.gson:gson:2.10.1")
+//per carrregar imatges rapid
+    implementation ("io.coil-kt:coil:2.4.0")
 
 
 
 }
+

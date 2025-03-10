@@ -9,14 +9,17 @@ data class AportacioResponse(
     val title: String,
     val descripcio: String,
     val imageUrls: List<String>,
-    val stars: Int,
+    val likes: Int,
+    val noLikes: Int,
     val usageCount: Long,
     val pdfUrls: String?, // URL del PDF (opcional)
     val videoUrls: String?, // Nou camp per a l'URL del vídeo (opcional)
     val data: String, // Nou camp per a la data
     val hora: String ,// Nou camp per a l'hora
     val user:String,
-    val userName: String
+    val userName: String,
+    val usersWhoLiked: MutableList<String> = mutableListOf(), // Canvia a MutableList
+    val usersWhoDisliked: MutableList<String> = mutableListOf() // Canvia a MutableList
 ) {
     fun toDomain(): AportacioUser {
         return AportacioUser(
@@ -26,14 +29,17 @@ data class AportacioResponse(
             title = title,
             descripcio = descripcio,
             imageUrls = imageUrls.toString(),
-            stars = stars,
+            likes = likes,
+            noLikes = noLikes,
             usageCount = usageCount,
             pdfUrls = pdfUrls,
             videoUrls = videoUrls, // Nou camp per al vídeo
             data = data,
             hora = hora,
             user = user,
-            userName = userName
+            userName = userName,
+            usersWhoLiked = usersWhoLiked,
+            usersWhoDisliked = usersWhoDisliked
         )
     }
 }

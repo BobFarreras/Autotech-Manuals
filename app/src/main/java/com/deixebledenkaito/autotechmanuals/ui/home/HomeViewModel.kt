@@ -1,13 +1,15 @@
 package com.deixebledenkaito.autotechmanuals.ui.home
 
 
-import android.net.Uri
+
+import android.util.Log
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.deixebledenkaito.autotechmanuals.data.network.auth.AuthService
 import com.deixebledenkaito.autotechmanuals.data.network.firebstore.FirebaseDataBaseService
 import com.deixebledenkaito.autotechmanuals.domain.Manuals
+import com.deixebledenkaito.autotechmanuals.domain.RutaGuardada
 import com.deixebledenkaito.autotechmanuals.domain.User
 
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -36,8 +38,9 @@ class HomeViewModel @Inject constructor(
     private val _user = MutableStateFlow<User?>(null)
     val user: StateFlow<User?> get() = _user
 
-
-    // Funció per carregar totes les dades necessàries
+    private val _rutesGuardades = MutableStateFlow<List<RutaGuardada>>(emptyList())
+    val rutesGuardades: StateFlow<List<RutaGuardada>> get() = _rutesGuardades
+    // Càrrega de totes les dades
     fun loadAllData() {
         viewModelScope.launch {
             loadManuals()
@@ -48,69 +51,75 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    fun loadManuals() {
+    // Càrrega dels manuals
+    private fun loadManuals() {
         viewModelScope.launch {
-            _manuals.value = firebaseDataBaseService.totsElsManuals()
+            if (!firebaseDataBaseService.isCacheValid()) {
+                _manuals.value = firebaseDataBaseService.totsElsManuals()
+                Log.d("HomeViewModel", "Manuals carregats des de: ${if (firebaseDataBaseService.isCacheValid()) "Cache" else "Firebase"}")
+            }
+
         }
     }
 
-    fun loadTopManuals() {
+    // Càrrega dels manuals destacats
+    private fun loadTopManuals() {
         viewModelScope.launch {
             val topManualIds = firebaseDataBaseService.getTopManuals()
             _topManuals.value = topManualIds.mapNotNull { id ->
-                firebaseDataBaseService.getManualByName(id)
+                firebaseDataBaseService.getManualByName(id) // Assigna la imatge local aquí
             }
+            Log.d("HomeViewModel", "Top manuals carregats des de: ${if (firebaseDataBaseService.isCacheValid()) "Cache" else "Firebase"}")
         }
     }
 
-    // Carrega l'últim manual utilitzat
-    fun loadLastManual() {
+    // Càrrega de l'últim manual utilitzat
+    private fun loadLastManual() {
         viewModelScope.launch {
             val lastManualName = firebaseDataBaseService.getLastUsedManual()
             if (lastManualName != null) {
-                _lastManual.value = firebaseDataBaseService.getManualByName(lastManualName)
+                _lastManual.value = firebaseDataBaseService.getManualByName(lastManualName) // Assigna la imatge local aquí
             }
         }
     }
 
-    // Actualitza l'últim manual utilitzat
+    // Actualització de l'últim manual utilitzat
     fun updateLastUsedManual(manualName: String) {
         viewModelScope.launch {
             val success = firebaseDataBaseService.updateLastUsedManual(manualName)
             if (success) {
-                loadLastManual() // Recarrega l'últim manual després d'actualitzar-lo
+                loadLastManual()
             }
         }
     }
 
+    // Càrrega de l'usuari
     fun loadUser() {
         viewModelScope.launch {
             _user.value = firebaseDataBaseService.getUser()
         }
     }
 
-    // Funció per tancar sessió
+    // Tancament de sessió
     fun logout(navigationToLogin: () -> Unit) {
         viewModelScope.launch(Dispatchers.IO) {
-            authService.logout() // Tanca la sessió de Firebase
+            authService.logout()
             withContext(Dispatchers.Main) {
-                navigationToLogin() // Executa el callback per navegar a Login
+                navigationToLogin()
             }
         }
     }
 
-    // Funció per incrementar l'ús d'un manual
+    // Increment de l'ús del manual
     fun incrementManualUsage(manualId: String) {
         viewModelScope.launch {
-            try {
-                firebaseDataBaseService.incrementManualUsage(manualId)
-                loadTopManuals() // Recarregar la llista de manuals destacats
-            } catch (e: Exception) {
-                // Manejar l'error
-                println("Error incrementant l'ús del manual: ${e.message}")
-            }
+            firebaseDataBaseService.incrementManualUsage(manualId)
+            loadTopManuals()
         }
     }
+
+
+}
 
 
 
@@ -137,4 +146,3 @@ class HomeViewModel @Inject constructor(
 
 
 
-}

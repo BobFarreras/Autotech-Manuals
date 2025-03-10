@@ -8,6 +8,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -18,8 +19,11 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -44,6 +48,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.layout.ContentScale
@@ -51,29 +56,49 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+
 import coil.compose.rememberImagePainter
 import com.deixebledenkaito.autotechmanuals.R
+
 import com.deixebledenkaito.autotechmanuals.domain.Manuals
-import com.deixebledenkaito.autotechmanuals.ui.ModelDatailScreen.ModelDetailScreen
-import com.deixebledenkaito.autotechmanuals.ui.ModelDatailScreen.buttons.btnErrors.ErrorsDelModelScreen
-import com.deixebledenkaito.autotechmanuals.ui.ModelDatailScreen.buttons.btnManuals.DescarregarManualsScreen
-import com.deixebledenkaito.autotechmanuals.ui.ModelDatailScreen.buttons.btnParametres.AjustListScreen
+import com.deixebledenkaito.autotechmanuals.domain.RutaGuardada
+
+import com.deixebledenkaito.autotechmanuals.ui.dintreDelModel.ModelDetailScreen
+import com.deixebledenkaito.autotechmanuals.ui.dintreDelModel.buttons.btnErrors.ErrorsDelModelScreen
+import com.deixebledenkaito.autotechmanuals.ui.dintreDelModel.buttons.btnManuals.DescarregarManualsScreen
+import com.deixebledenkaito.autotechmanuals.ui.dintreDelModel.buttons.btnParametres.AjustListScreen
 import com.deixebledenkaito.autotechmanuals.ui.aportacions.NovaAportacioScreen
-import com.deixebledenkaito.autotechmanuals.ui.autoMidesImg.CameraSizeDetectorApp
+import com.deixebledenkaito.autotechmanuals.ui.aportacions.aportacioCardDetail.AportacioCardDetailHome
+
+import com.deixebledenkaito.autotechmanuals.ui.funcionsExternes.autoMidesImg.CameraSizeDetectorApp
 
 
 import com.deixebledenkaito.autotechmanuals.ui.home.ui.theme.BackgroundColor
 import com.deixebledenkaito.autotechmanuals.ui.home.ui.theme.title
 import com.deixebledenkaito.autotechmanuals.ui.homeManuals.HomeManualScreen
-import com.deixebledenkaito.autotechmanuals.ui.login.LoginScreen
-import com.deixebledenkaito.autotechmanuals.ui.login.LoginViewModel
+import com.deixebledenkaito.autotechmanuals.ui.auth.login.LoginScreen
+import com.deixebledenkaito.autotechmanuals.ui.auth.login.LoginViewModel
+import com.deixebledenkaito.autotechmanuals.ui.dintreDelModel.buttons.btnCarpinteria.CarpinteriaScreen
+import com.deixebledenkaito.autotechmanuals.ui.dintreDelModel.buttons.btnCarpinteria.ESGScreen
+import com.deixebledenkaito.autotechmanuals.ui.dintreDelModel.buttons.btnConeccions.ManualEcdriveConeccionsScreen
+import com.deixebledenkaito.autotechmanuals.ui.funcionsExternes.autoDespiece.AutoDespieceHome
+import com.deixebledenkaito.autotechmanuals.ui.funcionsExternes.autoDespiece.CalculScreen
+import com.deixebledenkaito.autotechmanuals.ui.funcionsExternes.sharedViewModel.SharedViewModel
+
 import dagger.hilt.android.AndroidEntryPoint
+import okhttp3.internal.wait
+import java.text.SimpleDateFormat
+import java.util.Date
+
 
 @AndroidEntryPoint
 class HomeActivity : ComponentActivity() {
@@ -86,19 +111,19 @@ class HomeActivity : ComponentActivity() {
 }
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(viewModel: HomeViewModel, navController: NavController) {
+fun HomeScreen(viewModel: HomeViewModel, navController: NavController,  sharedViewModel: SharedViewModel = hiltViewModel()) {
     val manuals by viewModel.manuals.collectAsState()
     val topManuals by viewModel.topManuals.collectAsState()
     val lastManual by viewModel.lastManual.collectAsState()
-    Log.d("HomeScreen", "Últim manual a la UI: ${lastManual?.nom}")
     val user by viewModel.user.collectAsState()
 
     var showAddManualDialog by remember { mutableStateOf(false) }
-
-    var showSearchDialog by remember { mutableStateOf(false) } // Estat per al diàleg de cerca
-    var searchQuery by remember { mutableStateOf("") } // Estat per al terme de cerca
-    // Estat per controlar si el menú desplegable està obert
+    var showSearchDialog by remember { mutableStateOf(false) }
     var showMenu by remember { mutableStateOf(false) }
+
+
+    // Observar l'estat de les rutes guardades
+    val rutesGuardades by sharedViewModel.rutesGuardades.collectAsState()
 
     val MyCustomTextStyle = TextStyle(
         fontSize = 18.sp, // Mida del text
@@ -107,8 +132,13 @@ fun HomeScreen(viewModel: HomeViewModel, navController: NavController) {
         color = Color.DarkGray , // Color del text
         letterSpacing = 0.5.sp // Espaiat entre lletres
     )
+
     LaunchedEffect(Unit) {
         viewModel.loadAllData()
+        // Carregar les rutes guardades quan es carrega la pantalla
+
+        sharedViewModel.carregarRutesGuardades()
+
     }
 
     Scaffold(
@@ -146,7 +176,7 @@ fun HomeScreen(viewModel: HomeViewModel, navController: NavController) {
                         Icon(Icons.Default.MoreVert, contentDescription = "Més opcions")
                     }
 
-                    // Animació per al menú desplegable
+
                     // Animació per al menú desplegable
                     AnimatedVisibility(
                         visible = showMenu,
@@ -270,11 +300,38 @@ fun HomeScreen(viewModel: HomeViewModel, navController: NavController) {
         Column(
             modifier = Modifier
                 .padding(paddingValues)
-                .verticalScroll(rememberScrollState()) // Permet el scroll a tota la pantalla
+
                 .padding(8.dp)
         ) {
+            // Secció de rutes guardades
+            Text("Rutes Guardades", style = MyCustomTextStyle)
+            Spacer(modifier = Modifier.height(8.dp))
+            if (rutesGuardades.isEmpty()) {
+                Text(
+                    text = "No tens cap ruta guardada.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                        .align(Alignment.CenterHorizontally)
+                )
+            } else {
+                LazyRow {
+                    items(rutesGuardades) { ruta ->
+                        RutaGuardadaCard(
+                            ruta = ruta,
+                            onClick = {
+                                navController.navigate(ruta.ruta) // Navegar a la ruta guardada
+                            }
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(22.dp))
             // Mostra l'últim manual utilitzat
             lastManual?.let { manual ->
+                Log.d("UltimManual", lastManual.toString())
                 Text("Últim manual utilitzat", style = MyCustomTextStyle)
 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -338,8 +395,8 @@ fun ManualItem(manual: Manuals, modifier: Modifier = Modifier, onClick: () -> Un
 
     Card(
         modifier = modifier
-            .fillMaxWidth()
-            .height(150.dp)
+            .width(125.dp)
+            .height(100.dp)
             .padding(4.dp)
             .clickable { onClick() },
 
@@ -348,14 +405,14 @@ fun ManualItem(manual: Manuals, modifier: Modifier = Modifier, onClick: () -> Un
     ) {
         Column(
             modifier = Modifier
-                .fillMaxSize()
-                .background(Color.Black),
+                .fillMaxSize(),
+
 
             horizontalAlignment = Alignment.CenterHorizontally // Centra el contingut horitzontalment
         ) {
-            // Imatge del manual
+            // Imatge del manual (des de res/drawable o una per defecte)
             Image(
-                painter = rememberImagePainter(manual.imageUrl),
+                painter = painterResource(id = manual.imageResId),
                 contentDescription = manual.nom,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -406,6 +463,7 @@ fun AppNavigation() {
         composable("modelDetail/{manualId}/{modelId}") { backStackEntry ->
             val manualId = backStackEntry.arguments?.getString("manualId") ?: ""
             val modelId = backStackEntry.arguments?.getString("modelId") ?: ""
+            val userId = backStackEntry.arguments?.getString("userId") ?: ""
             ModelDetailScreen(
                 manualId = manualId,
                 modelId = modelId,
@@ -432,6 +490,41 @@ fun AppNavigation() {
         }
         composable("parametres") { navBackStackEntry ->
             AjustListScreen()
+        }
+
+        composable("aportacioDetailHome/{aportacioId}") { backStackEntry ->
+            val aportacioId = backStackEntry.arguments?.getString("aportacioId") ?: ""
+            AportacioCardDetailHome(aportacioId = aportacioId, navController = navController)
+        }
+        composable("Coneccions") { backStackEntry ->
+            ManualEcdriveConeccionsScreen()
+        }
+        composable("carpinteria/{manualId}/{modelId}") {backStackEntry ->
+            val manualId = backStackEntry.arguments?.getString("manualId") ?: ""
+            val modelId = backStackEntry.arguments?.getString("modelId") ?: ""
+            CarpinteriaScreen(
+                navController = navController ,
+                manualId = manualId,
+                modelId = modelId,
+                )
+        }
+        composable("esg/{manualId}/{modelId}") {backStackEntry ->
+            val manualId = backStackEntry.arguments?.getString("manualId") ?: ""
+            val modelId = backStackEntry.arguments?.getString("modelId") ?: ""
+            val esg = "ESG"
+            ESGScreen(
+                manualId = manualId,
+                modelId = modelId,
+                carpinteriaID = esg,
+                navController = navController)
+        }
+
+        composable("autoDespieceHome") { navBackStackEntry ->
+            AutoDespieceHome(  navController = navController)
+        }
+        composable("calcul/{cardType}") { backStackEntry ->
+            val cardType = backStackEntry.arguments?.getString("cardType")
+            CalculScreen(navController = navController, cardType = cardType)
         }
 
     }
@@ -515,6 +608,58 @@ fun SearchResultsScreen(
                 })
                 Spacer(modifier = Modifier.height(8.dp))
             }
+        }
+    }
+}
+
+fun getImageResIdFromManualName(manualName: String): Int {
+    // Neteja el nom del manual
+    val cleanedName = manualName
+        .replace(" ", "_") // Reemplaça espais amb _
+        .replace("[^a-zA-Z0-9_]".toRegex(), "") // Elimina caràcters especials
+        .lowercase() // Converteix a minúscules
+
+    // Retorna l'identificador de recurs (R.drawable.*)
+    return try {
+        // Utilitza la reflexió per obtenir l'ID del recurs
+        val resId = R.drawable::class.java.getField(cleanedName).getInt(null)
+        resId
+    } catch (e: Exception) {
+        // Si no es troba la imatge, retorna una imatge per defecte
+        R.drawable.ic_gallery
+    }
+}
+
+@Composable
+fun RutaGuardadaCard(ruta: RutaGuardada, onClick: () -> Unit) {
+
+    val myCustomColor = Color(0xFFDBFFFC) // Verd personalitzat
+
+    Card(
+        modifier = Modifier
+            .width(150.dp)
+            .height(105.dp)
+            .clickable { onClick() }
+            .background(Color.White)
+            .padding(4.dp)
+            .border(
+                width = 0.5.dp, // Gruix del borde
+                color = Color.Gray, // Color del borde
+                shape = RoundedCornerShape(8.dp) // Forma del borde
+            ),
+        shape = RoundedCornerShape(8.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+    ) {
+        Column(modifier = Modifier
+
+            .background(Color.White) // Defineix el color de fons aquí
+
+        ) {
+            Text(text = ruta.nom, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(6.dp), textAlign = TextAlign.Center)
+            Text(
+                style = MaterialTheme.typography.bodySmall,modifier = Modifier.padding(6.dp), textAlign = TextAlign.Center,
+                text = "Guardat el: ${SimpleDateFormat("dd/MM/yyyy").format(Date(ruta.dataGuardat))}"
+            )
         }
     }
 }
