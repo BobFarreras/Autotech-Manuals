@@ -26,15 +26,3 @@ fun isDarkTheme(context: Context): Boolean {
     }
 }
 
-@Composable
-fun ChangeNavigationBarColor(color: Color) {
-    val view = LocalView.current
-    if (!view.isInEditMode) { // Assegura que no s'executi en mode de previsualització
-        val window = (view.context as Activity).window
-        val context = view.context
-        SideEffect {
-            window.navigationBarColor = color.toArgb() // Canvia el color de la barra de navegació
-            WindowCompat.getInsetsController(window, view).isAppearanceLightNavigationBars = !isDarkTheme(context) // Ajusta el color dels icons
-        }
-    }
-}

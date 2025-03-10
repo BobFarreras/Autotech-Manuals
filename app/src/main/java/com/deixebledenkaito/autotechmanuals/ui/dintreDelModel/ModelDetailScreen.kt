@@ -59,7 +59,7 @@ import com.deixebledenkaito.autotechmanuals.domain.Model
 
 
 import kotlinx.coroutines.launch
-import java.io.File
+
 
 
 //AIXO ES DINTRE EL MODEL AMB ELS BOTONS I LES APORTACIONS

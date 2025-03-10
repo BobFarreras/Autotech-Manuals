@@ -8,7 +8,7 @@ import android.os.Environment
 import android.provider.MediaStore
 import android.util.Log
 import androidx.annotation.RequiresApi
-import coil.request.ImageRequest
+
 
 import com.deixebledenkaito.autotechmanuals.data.response.ErrorsDelModelResponse
 import com.deixebledenkaito.autotechmanuals.data.response.ManualResponse
@@ -115,12 +115,7 @@ class FirebaseDataBaseService @Inject constructor(
             topManuals
         }
     }
-    // Invalida la memòria cau
-    fun invalidateCache() {
-        cachedManuals = null
-        cachedTopManuals = null
-        cachedModels.clear()
-    }
+
     fun isCacheValid(): Boolean {
         return cachedManuals != null || cachedTopManuals != null || cachedModels.isNotEmpty()
     }

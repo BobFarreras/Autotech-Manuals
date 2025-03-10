@@ -37,9 +37,6 @@ class HomeViewModel @Inject constructor(
 
     private val _user = MutableStateFlow<User?>(null)
     val user: StateFlow<User?> get() = _user
-
-    private val _rutesGuardades = MutableStateFlow<List<RutaGuardada>>(emptyList())
-    val rutesGuardades: StateFlow<List<RutaGuardada>> get() = _rutesGuardades
     // Càrrega de totes les dades
     fun loadAllData() {
         viewModelScope.launch {

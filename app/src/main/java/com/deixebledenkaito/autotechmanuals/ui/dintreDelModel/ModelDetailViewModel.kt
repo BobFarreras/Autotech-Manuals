@@ -62,14 +62,6 @@ class ModelDetailViewModel @Inject constructor(
         }
     }
 
-    // Funció per actualitzar likes o no likes
-    suspend fun updateLikeOrNoLike(aportacio: AportacioUser, userId: String, isLike: Boolean): AportacioUser {
-        return try {
-            firebaseDataBaseService.updateLikeOrNoLike(aportacio, userId, isLike)
-        } catch (e: Exception) {
-            _error.value = "Error actualitzant Like/No Like: ${e.message}"
-            throw e
-        }
-    }
+
 
 }

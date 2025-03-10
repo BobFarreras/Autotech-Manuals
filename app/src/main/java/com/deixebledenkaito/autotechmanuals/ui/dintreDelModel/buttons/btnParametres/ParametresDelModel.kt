@@ -203,6 +203,6 @@ fun AjustItem(ajust: Ajust) {
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
         )
         Spacer(modifier = Modifier.height(8.dp))
-        Divider()
+
     }
 }

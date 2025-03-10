@@ -33,7 +33,7 @@ import java.io.InputStream
 
 import org.opencv.dnn.Dnn
 import org.opencv.dnn.Net
-import org.opencv.imgcodecs.Imgcodecs
+
 import java.io.FileOutputStream
 
 @Composable
@@ -156,8 +156,7 @@ suspend fun analyzeImage(context: Context, imageUri: Uri): Pair<String, Bitmap> 
                         val width = detection.get(i, 2)[0] * mat.cols()
                         val height = detection.get(i, 3)[0] * mat.rows()
 
-                        val x = (centerX - width / 2).toInt()
-                        val y = (centerY - height / 2).toInt()
+
 
                         val objectWidthCm = width * 0.1 // Escala de píxels a cm (ajusta segons la teva necessitat)
                         val objectHeightCm = height * 0.1
@@ -209,7 +208,7 @@ fun drawDetectionsOnImage(mat: Mat, detectedObjects: List<DetectedObject>): Mat 
         Imgproc.rectangle(
             mat,
             Point(x.toDouble(), y.toDouble()),
-            Point((x + obj.width).toDouble(), (y + obj.height).toDouble()),
+            Point((x + obj.width), (y + obj.height)),
             Scalar(0.0, 255.0, 0.0), // Color verd
             4 // Gruix de la línia
         )

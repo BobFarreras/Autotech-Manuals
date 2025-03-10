@@ -102,20 +102,21 @@ dependencies {
     // COIL ES PER IMPLEMENTAR IMATGES EN COMPOSE
     implementation(libs.coil.compose)
 
-    implementation ("androidx.compose.ui:ui:1.7.8")
+    implementation (libs.ui)
     implementation (libs.coil.compose.v222) // Per carregar imatges des de URLs
-    implementation ("androidx.activity:activity-compose:1.10.1")
-    implementation ("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
-    implementation ("androidx.lifecycle:lifecycle-runtime-compose:2.8.7")
+    implementation (libs.androidx.activity.compose.v1101)
+    implementation (libs.androidx.lifecycle.viewmodel.compose)
+    implementation (libs.androidx.lifecycle.runtime.compose)
+    //noinspection UseTomlInstead
     implementation ("androidx.compose.runtime:runtime-livedata:1.7.8")
 
-    implementation ("androidx.compose.runtime:runtime:1.7.8")
-    implementation ("androidx.compose.foundation:foundation:1.7.8")
+    implementation (libs.androidx.runtime)
+    implementation (libs.androidx.foundation)
 
 
 //    PER REPRODUIUR VIDEOS A ANDROID
-    implementation ("androidx.media3:media3-exoplayer:1.5.1")
-    implementation ("androidx.media3:media3-ui:1.5.1")
+    implementation (libs.androidx.media3.exoplayer)
+    implementation (libs.androidx.media3.ui)
 
 //    TENSORFLOW IMPLEMENTAR IMATGES AMB LES MIDES
     implementation (libs.tensorflow.lite)// Suport per a tasques com la detecció d'objectes
@@ -123,21 +124,21 @@ dependencies {
     implementation (libs.tensorflow.lite.task.vision) // Tasques de visió per computador
 
     // Dependències de CameraX
-    implementation ("androidx.camera:camera-core:1.3.0")
-    implementation ("androidx.camera:camera-camera2:1.3.0")
-    implementation ("androidx.camera:camera-lifecycle:1.3.0")
-    implementation ("androidx.camera:camera-view:1.3.0")
-    implementation ("androidx.camera:camera-extensions:1.3.0")
+    implementation (libs.androidx.camera.core)
+    implementation (libs.androidx.camera.camera2)
+    implementation (libs.androidx.camera.lifecycle)
+    implementation (libs.androidx.camera.view.v130)
+    implementation (libs.androidx.camera.extensions)
 
 //Claude m'ha donat aquestes dependenceies'
     implementation ("com.google.mlkit:object-detection:17.0.2")
-    implementation ("com.google.mlkit:vision-common:17.3.0")
-    implementation ("com.google.mlkit:image-labeling:17.0.0")
+    implementation (libs.vision.common)
+    implementation (libs.image.labeling)
 
 //json
-    implementation("com.google.code.gson:gson:2.10.1")
+    implementation(libs.gson)
 //per carrregar imatges rapid
-    implementation ("io.coil-kt:coil:2.4.0")
+    implementation (libs.coil)
 
 
 

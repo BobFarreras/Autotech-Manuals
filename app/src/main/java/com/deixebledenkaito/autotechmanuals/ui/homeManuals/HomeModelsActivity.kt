@@ -64,8 +64,7 @@ class HomeManualsActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        // Obtenir el nom del manual des de l'intent
-        val manualName = intent.getStringExtra("manualName") ?: ""
+
 
     }
 }

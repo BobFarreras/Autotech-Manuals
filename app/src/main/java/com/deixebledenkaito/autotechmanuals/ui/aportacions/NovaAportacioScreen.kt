@@ -52,12 +52,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
+
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 
-import androidx.compose.ui.res.vectorResource
+
 
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
@@ -67,7 +67,7 @@ import coil.compose.rememberImagePainter
 import com.deixebledenkaito.autotechmanuals.R
 import com.deixebledenkaito.autotechmanuals.ui.Profile.SeleccionarImatgeDialog
 import com.deixebledenkaito.autotechmanuals.ui.funcionsExternes.videoPlayer.VideoPlayer
-import kotlinx.coroutines.delay
+
 import java.io.File
 
 

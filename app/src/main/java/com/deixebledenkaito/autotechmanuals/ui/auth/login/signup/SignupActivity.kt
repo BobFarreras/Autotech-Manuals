@@ -15,7 +15,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.deixebledenkaito.autotechmanuals.ui.home.HomeActivity
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.collectLatest
+
 
 // Activity principal per gestionar la pantalla de registre
 @AndroidEntryPoint

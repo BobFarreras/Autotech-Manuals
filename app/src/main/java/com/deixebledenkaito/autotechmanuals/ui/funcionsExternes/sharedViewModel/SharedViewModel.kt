@@ -4,7 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.deixebledenkaito.autotechmanuals.data.network.firebstore.FirebaseDataBaseService
-import com.deixebledenkaito.autotechmanuals.data.response.RutaGuardadaResponse
+
 import com.deixebledenkaito.autotechmanuals.domain.RutaGuardada
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -54,7 +54,7 @@ class SharedViewModel @Inject constructor(
         viewModelScope.launch {
             val userId = firebaseDataBaseService.getUser()
             if (userId != null) {
-                _rutesGuardades.value = firebaseDataBaseService.obtenirRutesGuardades(userId.id) ?: emptyList()
+                _rutesGuardades.value = firebaseDataBaseService.obtenirRutesGuardades(userId.id)
             }
         }
     }

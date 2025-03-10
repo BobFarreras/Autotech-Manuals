@@ -19,11 +19,11 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.LocalIndication
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
+
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -31,10 +31,10 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
+
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
+
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 
@@ -48,7 +48,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
+
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.layout.ContentScale
@@ -95,7 +95,7 @@ import com.deixebledenkaito.autotechmanuals.ui.funcionsExternes.autoDespiece.Cal
 import com.deixebledenkaito.autotechmanuals.ui.funcionsExternes.sharedViewModel.SharedViewModel
 
 import dagger.hilt.android.AndroidEntryPoint
-import okhttp3.internal.wait
+
 import java.text.SimpleDateFormat
 import java.util.Date
 
@@ -117,7 +117,7 @@ fun HomeScreen(viewModel: HomeViewModel, navController: NavController,  sharedVi
     val lastManual by viewModel.lastManual.collectAsState()
     val user by viewModel.user.collectAsState()
 
-    var showAddManualDialog by remember { mutableStateOf(false) }
+
     var showSearchDialog by remember { mutableStateOf(false) }
     var showMenu by remember { mutableStateOf(false) }
 
@@ -301,11 +301,11 @@ fun HomeScreen(viewModel: HomeViewModel, navController: NavController,  sharedVi
             modifier = Modifier
                 .padding(paddingValues)
 
-                .padding(8.dp)
+                .padding(4.dp)
         ) {
             // Secció de rutes guardades
             Text("Rutes Guardades", style = MyCustomTextStyle)
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(4.dp))
             if (rutesGuardades.isEmpty()) {
                 Text(
                     text = "No tens cap ruta guardada.",
@@ -324,27 +324,27 @@ fun HomeScreen(viewModel: HomeViewModel, navController: NavController,  sharedVi
                                 navController.navigate(ruta.ruta) // Navegar a la ruta guardada
                             }
                         )
-                        Spacer(modifier = Modifier.height(8.dp))
+                        Spacer(modifier = Modifier.height(4.dp))
                     }
                 }
             }
-            Spacer(modifier = Modifier.height(22.dp))
+            Spacer(modifier = Modifier.height(16.dp))
             // Mostra l'últim manual utilitzat
             lastManual?.let { manual ->
                 Log.d("UltimManual", lastManual.toString())
                 Text("Últim manual utilitzat", style = MyCustomTextStyle)
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(4.dp))
                 ManualItem(manual = manual, onClick = {
                     navController.navigate("homeManual/${manual.nom}")
                 })
-                Spacer(modifier = Modifier.height(22.dp))
+                Spacer(modifier = Modifier.height(16.dp))
             }
 
             // Llista de manuals més populars (horitzontal)
             Text("Manuals més populars", style = MyCustomTextStyle)
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(4.dp))
             LazyRow {
                 items(topManuals) { manual ->
                     ManualItem(manual = manual, modifier = Modifier.width(200.dp), onClick = {
@@ -353,17 +353,17 @@ fun HomeScreen(viewModel: HomeViewModel, navController: NavController,  sharedVi
                     Spacer(modifier = Modifier.width(8.dp))
                 }
             }
-            Spacer(modifier = Modifier.height(22.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             // Llista de tots els manuals (vertical en graella de 2 columnes)
             Text("Tots els manuals", style = MyCustomTextStyle)
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(4.dp))
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2), // 2 columnes
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(max = 600.dp), // Limita l'alçada màxima
+                    .fillMaxWidth(),
+
                 contentPadding = PaddingValues(2.dp),
                 verticalArrangement = Arrangement.spacedBy(4.dp),
                 horizontalArrangement = Arrangement.spacedBy(4.dp)
@@ -463,7 +463,7 @@ fun AppNavigation() {
         composable("modelDetail/{manualId}/{modelId}") { backStackEntry ->
             val manualId = backStackEntry.arguments?.getString("manualId") ?: ""
             val modelId = backStackEntry.arguments?.getString("modelId") ?: ""
-            val userId = backStackEntry.arguments?.getString("userId") ?: ""
+
             ModelDetailScreen(
                 manualId = manualId,
                 modelId = modelId,
@@ -633,7 +633,7 @@ fun getImageResIdFromManualName(manualName: String): Int {
 @Composable
 fun RutaGuardadaCard(ruta: RutaGuardada, onClick: () -> Unit) {
 
-    val myCustomColor = Color(0xFFDBFFFC) // Verd personalitzat
+
 
     Card(
         modifier = Modifier

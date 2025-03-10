@@ -1,7 +1,7 @@
 package com.deixebledenkaito.autotechmanuals.domain
 
 import com.deixebledenkaito.autotechmanuals.R
-import com.deixebledenkaito.autotechmanuals.ui.home.getImageResIdFromManualName
+
 
 // Model de dades per a un manual
 data class Manuals(
