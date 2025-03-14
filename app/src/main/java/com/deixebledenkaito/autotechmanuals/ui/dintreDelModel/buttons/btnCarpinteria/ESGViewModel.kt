@@ -28,7 +28,7 @@ class ESGViewModel @Inject constructor(
     val isLoading: StateFlow<Boolean> get() = _isLoading
 
     private val _errorMessage = MutableStateFlow<String?>(null)
-    val errorMessage: StateFlow<String?> get() = _errorMessage
+
 
     // Carregar la llista de PDFs
     fun carregarPdfsESG(manualId: String, modelId: String, carpinteriaId: String) {

@@ -25,10 +25,10 @@ class SharedViewModel @Inject constructor(
     val rutesGuardades: StateFlow<List<RutaGuardada>> get() = _rutesGuardades
 
     private val _rutesCarregades = MutableStateFlow(false)
-    val rutesCarregades: StateFlow<Boolean> get() = _rutesCarregades
+
 
     private val _snackbarMessage = MutableStateFlow<String?>(null)
-    val snackbarMessage: StateFlow<String?> get() = _snackbarMessage
+
 
     // Estat per al diàleg de missatges
     private val _showMessageDialog = MutableStateFlow(false)

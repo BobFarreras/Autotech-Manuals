@@ -28,7 +28,7 @@ class LoginViewModel @Inject constructor(
     val loginState: StateFlow<LoginState> = _loginState
 
     private val _verificationId = MutableStateFlow<String?>(null)
-    val verificationId: StateFlow<String?> = _verificationId
+
 
     fun login(email: String, password: String) {
         viewModelScope.launch {

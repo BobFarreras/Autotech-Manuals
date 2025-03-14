@@ -34,6 +34,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -81,9 +83,12 @@ fun DescarregarManualsScreen(
             TopAppBar(
                 title = { Text("Descarregar Manuals") },
                 navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Tornar")
-                    }
+                    Image(
+                        painter = painterResource(id = R.drawable.ic_back),
+                        contentDescription = "Tornar",
+                        modifier = Modifier.size(24.dp),
+                        colorFilter = ColorFilter.tint(Color.Black) // Canvia el color de l'icona
+                    )
                 }
             )
         }

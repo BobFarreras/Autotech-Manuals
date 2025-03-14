@@ -37,7 +37,7 @@ class ProfileViewModel @Inject constructor(
 
     // Estat per als missatges d'error
     private val _errorMessage = MutableStateFlow<String?>(null)
-    val errorMessage: StateFlow<String?> get() = _errorMessage
+
 
     // Carrega les dades de l'usuari
     fun loadUser() {

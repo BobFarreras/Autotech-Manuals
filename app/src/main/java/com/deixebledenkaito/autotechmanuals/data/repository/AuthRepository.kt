@@ -43,7 +43,7 @@ class AuthRepository @Inject constructor(
         }
     }
 
-    suspend fun loginWithPhone(
+    fun loginWithPhone(
         phoneNumber: String,
         callback: PhoneAuthProvider.OnVerificationStateChangedCallbacks
     ): Result<Unit> {

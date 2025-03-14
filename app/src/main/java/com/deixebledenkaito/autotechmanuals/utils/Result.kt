@@ -10,7 +10,6 @@ sealed class Result<out T> {
 enum class AuthErrorType(val description: String) {
     INVALID_CREDENTIALS("Credencials incorrectes"),
     USER_NOT_FOUND("Usuari no trobat"),
-    NETWORK_ERROR("Error de xarxa"),
     WEAK_PASSWORD("Contrasenya feble"),
     INVALID_CODE("Codi invàlid"),
     UNKNOWN_ERROR("Error desconegut")
