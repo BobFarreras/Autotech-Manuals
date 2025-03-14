@@ -28,7 +28,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -53,7 +53,8 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import coil.compose.rememberImagePainter
+import coil.compose.AsyncImage
+
 import com.deixebledenkaito.autotechmanuals.R
 import com.deixebledenkaito.autotechmanuals.domain.Manuals
 import com.deixebledenkaito.autotechmanuals.domain.RutaGuardada
@@ -127,8 +128,9 @@ fun HomeScreen(viewModel: HomeViewModel, navController: NavController,  sharedVi
                 title = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         user?.profileImageUrl?.let { imageUrl ->
-                            Image(
-                                painter = rememberImagePainter(imageUrl),
+                            // Imatge de perfil
+                            AsyncImage(
+                                model = imageUrl, // URL de la imatge
                                 contentDescription = "Imatge de perfil",
                                 contentScale = ContentScale.FillBounds,
                                 modifier = Modifier
@@ -549,8 +551,12 @@ fun SearchResultsScreen(
             TopAppBar(
                 title = { Text("Resultats de cerca: $searchQuery") },
                 navigationIcon = {
+                    // Botó per tornar enrere amb la teva icona personalitzada
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Tornar")
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_back), // Icona personalitzada
+                            contentDescription = "Tornar"
+                        )
                     }
                 }
             )
