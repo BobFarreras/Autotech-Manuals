@@ -2,7 +2,6 @@ package com.deixebledenkaito.autotechmanuals.ui.auth.login
 
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -17,13 +16,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import coil.compose.rememberImagePainter
 import com.deixebledenkaito.autotechmanuals.R
 import com.deixebledenkaito.autotechmanuals.ui.home.HomeActivity
 import com.deixebledenkaito.autotechmanuals.ui.auth.signup.SignupActivity
-import com.google.firebase.FirebaseException
-import com.google.firebase.auth.PhoneAuthCredential
-import com.google.firebase.auth.PhoneAuthProvider
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -78,8 +75,8 @@ fun LoginScreen(loginViewModel: LoginViewModel) {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // Imatge del logo
-            Image(
-                painter = rememberImagePainter(R.drawable.logo_v1),
+            AsyncImage(
+                model = R.drawable.logo_v1, // Referència a la imatge
                 contentDescription = "Logo",
                 modifier = Modifier.size(100.dp)
             )

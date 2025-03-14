@@ -444,8 +444,8 @@ fun AppNavigation() {
             val modelId = backStackEntry.arguments?.getString("modelId") ?: ""
             DescarregarManualsScreen(
                 manualId = manualId,
-                modelId = modelId,
-                navController = navController
+                modelId = modelId
+
             )
         }
         composable("parametres") { navBackStackEntry ->
