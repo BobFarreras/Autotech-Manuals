@@ -5,7 +5,11 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 
-import com.deixebledenkaito.autotechmanuals.data.network.firebstore.FirebaseDataBaseService
+
+import com.deixebledenkaito.autotechmanuals.data.service.AportacioService
+import com.deixebledenkaito.autotechmanuals.data.service.ManualService
+import com.deixebledenkaito.autotechmanuals.data.service.ModelService
+import com.deixebledenkaito.autotechmanuals.data.service.UserService
 import com.deixebledenkaito.autotechmanuals.domain.AportacioUser
 import com.deixebledenkaito.autotechmanuals.domain.Manuals
 import com.deixebledenkaito.autotechmanuals.domain.Model
@@ -21,11 +25,15 @@ import java.util.Date
 import java.util.Locale
 import java.util.UUID
 import javax.inject.Inject
+import com.deixebledenkaito.autotechmanuals.utils.Result
 
 
 @HiltViewModel
 class NovaAportacioViewModel @Inject constructor(
-    private val firebaseDataBaseService: FirebaseDataBaseService,
+    private val userService: UserService,
+    private val manualService: ManualService,
+    private val modelService: ModelService,
+    private val aportacioService: AportacioService,
     private val storage: FirebaseStorage
 ) : ViewModel() {
 
@@ -45,18 +53,43 @@ class NovaAportacioViewModel @Inject constructor(
         carregarManuals()
     }
 
+    // Carrega tots els manuals
     private fun carregarManuals() {
         viewModelScope.launch {
-            _manuals.value = firebaseDataBaseService.totsElsManuals()
+            _isLoading.value = true
+            _notificacio.value = ""
+            try {
+                when (val result = manualService.totsElsManuals()) {
+                    is Result.Success -> _manuals.value = result.data
+                    is Result.Error -> _notificacio.value = "Error carregant manuals: ${result.message}"
+                }
+            } catch (e: Exception) {
+                _notificacio.value = "Error inesperat: ${e.message}"
+            } finally {
+                _isLoading.value = false
+            }
         }
     }
 
+    // Carrega els models d'un manual específic
     fun carregarModels(manualId: String) {
         viewModelScope.launch {
-            _models.value = firebaseDataBaseService.getModelsForManual(manualId)
+            _isLoading.value = true
+            _notificacio.value = ""
+            try {
+                when (val result = modelService.getModelsForManual(manualId)) {
+                    is Result.Success -> _models.value = result.data
+                    is Result.Error -> _notificacio.value = "Error carregant models: ${result.message}"
+                }
+            } catch (e: Exception) {
+                _notificacio.value = "Error inesperat: ${e.message}"
+            } finally {
+                _isLoading.value = false
+            }
         }
     }
 
+    // Guarda una nova aportació
     fun guardarAportacio(
         manual: String?,
         model: String?,
@@ -67,20 +100,29 @@ class NovaAportacioViewModel @Inject constructor(
         videoUris: List<Uri>
     ) {
         viewModelScope.launch {
-            _isLoading.value = true // Iniciar càrrega
-            val userId = FirebaseAuth.getInstance().currentUser?.uid
+            _isLoading.value = true
+            _notificacio.value = ""
 
+            val userId = FirebaseAuth.getInstance().currentUser?.uid
             if (userId == null) {
-                mostrarNotificacio("No s'ha trobat l'ID de l'usuari")
-                _isLoading.value = false // Finalitzar càrrega
+                _notificacio.value = "No s'ha trobat l'ID de l'usuari"
+                _isLoading.value = false
                 return@launch
             }
-            // Obtenir les dades de l'usuari des de Firestore
-            val user = firebaseDataBaseService.getUser()
+
+            // Obtenir les dades de l'usuari
+            val user = when (val result = userService.getUser()) {
+                is Result.Success -> result.data
+                is Result.Error -> {
+                    _notificacio.value = "Error obtenint dades de l'usuari: ${result.message}"
+                    _isLoading.value = false
+                    return@launch
+                }
+            }
+
             val userName = user?.name ?: "Usuari desconegut"
 
-
-            // Generar l'ID com a data/hora/min/segons + el nom del títol
+            // Generar l'ID de l'aportació
             val dateFormat = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault())
             val dateTime = dateFormat.format(Date())
             val aportacioId = "${dateTime}_${title.replace(" ", "_")}"
@@ -89,112 +131,69 @@ class NovaAportacioViewModel @Inject constructor(
             val data = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
             val hora = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date())
 
-            Log.d("NovaAportacioViewModel", "Iniciant guardat de l'aportació: $aportacioId")
-
             try {
-                // Pujar imatges (si n'hi ha)
-                val imatgeUrls = if (imatges.isNotEmpty()) {
-                    mutableListOf<String>().apply {
-                        for (uri in imatges) {
-                            val imatgeName = UUID.randomUUID().toString()
-                            val imatgeRef = storage.reference.child("usuaris/$userId/aportacions/$aportacioId/imatges/$imatgeName")
-                            Log.d("NovaAportacioViewModel", "Pujant imatge: $imatgeName")
-                            val uploadTask = imatgeRef.putFile(uri).await()
-                            val downloadUrl = uploadTask.storage.downloadUrl.await().toString()
-                            add(downloadUrl)
-                            Log.d("NovaAportacioViewModel", "Imatge pujada: $downloadUrl")
-                        }
-                    }
-                } else {
-                    emptyList() // Si no hi ha imatges, retorna una llista buida
-                }
+                // Pujar imatges
+                val imatgeUrls = pujarFitxers(imatges, userId, aportacioId, "imatges")
 
-                // Pujar PDFs (si n'hi ha)
-                val pdfUrls = if (pdfUris.isNotEmpty()) {
-                    mutableListOf<String>().apply {
-                        for (uri in pdfUris) {
-                            val pdfName = UUID.randomUUID().toString()
-                            val pdfRef = storage.reference.child("usuaris/$userId/aportacions/$aportacioId/pdfs/$pdfName")
-                            Log.d("NovaAportacioViewModel", "Pujant PDF: $pdfName")
-                            val uploadTask = pdfRef.putFile(uri).await()
-                            val downloadUrlPdf = uploadTask.storage.downloadUrl.await().toString()
-                            add(downloadUrlPdf)
-                            Log.d("NovaAportacioViewModel", "PDF pujat: $downloadUrlPdf")
-                        }
-                    }
-                } else {
-                    emptyList() // Si no hi ha PDFs, retorna una llista buida
-                }
+                // Pujar PDFs
+                val pdfUrls = pujarFitxers(pdfUris, userId, aportacioId, "pdfs")
 
-                // Pujar vídeos (si n'hi ha)
-                val videoUrls = if (videoUris.isNotEmpty()) {
-                    mutableListOf<String>().apply {
-                        for (uri in videoUris) {
-                            val videoName = UUID.randomUUID().toString()
-                            val videoRef = storage.reference.child("usuaris/$userId/aportacions/$aportacioId/videos/$videoName")
-                            Log.d("NovaAportacioViewModel", "Pujant vídeo: $videoName")
-                            val uploadTask = videoRef.putFile(uri).await()
-                            val downloadUrlVideo = uploadTask.storage.downloadUrl.await().toString()
-                            add(downloadUrlVideo)
-                            Log.d("NovaAportacioViewModel", "Vídeo pujat: $downloadUrlVideo")
-                        }
-                    }
-                } else {
-                    emptyList() // Si no hi ha vídeos, retorna una llista buida
-                }
+                // Pujar vídeos
+                val videoUrls = pujarFitxers(videoUris, userId, aportacioId, "videos")
 
-                // Guardar l'aportació a Firestore
+                // Crear l'objecte AportacioUser
                 val aportacio = AportacioUser(
                     id = aportacioId,
                     model = model ?: "",
                     manual = manual ?: "",
                     title = title,
                     descripcio = descripcio,
-                    imageUrls = imatgeUrls.joinToString(","), // Converteix la llista a una cadena separada per comes
+                    imageUrls = imatgeUrls.joinToString(","),
                     likes = 0,
                     noLikes = 0,
                     usageCount = 0,
-                    pdfUrls = pdfUrls.joinToString(","), // Converteix la llista a una cadena separada per comes
-                    videoUrls = videoUrls.joinToString(","), // Converteix la llista a una cadena separada per comes
+                    pdfUrls = pdfUrls.joinToString(","),
+                    videoUrls = videoUrls.joinToString(","),
                     data = data,
                     hora = hora,
                     user = userId,
-                    userName = userName, // Afegim el nom de l'usuari
-                    usersWhoLiked = mutableListOf<String>(), // Inicialitza com a MutableList
-                    usersWhoDisliked = mutableListOf<String>(), // Inicialitza com a MutableList
+                    userName = userName,
+                    usersWhoLiked = mutableListOf(),
+                    usersWhoDisliked = mutableListOf()
                 )
-                Log.d("NovaAportacioViewModel", "Guardant aportació a Firestore: $aportacio")
-                val success = firebaseDataBaseService.addAportacio(userId, aportacio)
-                val aportacioAlManual = firebaseDataBaseService.addAportacioEnElManual(userId, aportacio)
-                if (success) {
-                    Log.d("NovaAportacioViewModel", "Aportació guardada correctament")
-                    mostrarNotificacio("Aportació guardada correctament")
-                } else {
-                    Log.e("NovaAportacioViewModel", "Error guardant l'aportació")
-                    mostrarNotificacio("Error guardant l'aportació")
-                }
-                if (aportacioAlManual) {
-                    Log.d("NovaAportacioViewModel", "Aportació guardada correctament")
-                    mostrarNotificacio("Aportació guardada correctament")
-                } else {
-                    Log.e("NovaAportacioViewModel", "Error guardant l'aportació")
-                    mostrarNotificacio("Error guardant l'aportació")
+
+                // Guardar l'aportació a Firestore
+                when (val result = aportacioService.addAportacio(userId, aportacio)) {
+                    is Result.Success -> {
+                        _notificacio.value = "Aportació guardada correctament"
+                        Log.d("NovaAportacioViewModel", "Aportació guardada correctament")
+                    }
+                    is Result.Error -> {
+                        _notificacio.value = "Error guardant l'aportació: ${result.message}"
+                        Log.e("NovaAportacioViewModel", "Error guardant l'aportació", result.exception)
+                    }
                 }
             } catch (e: Exception) {
-                Log.e("NovaAportacioViewModel", "Error: ${e.message}")
-                mostrarNotificacio("Error: ${e.message}")
+                _notificacio.value = "Error inesperat: ${e.message}"
+                Log.e("NovaAportacioViewModel", "Error inesperat", e)
             } finally {
-                _isLoading.value = false // Finalitzar càrrega
+                _isLoading.value = false
             }
         }
     }
 
-    private fun mostrarNotificacio(missatge: String) {
-        viewModelScope.launch {
-            _notificacio.emit(missatge)
-
-
-
+    // Funció per pujar fitxers (imatges, PDFs, vídeos) a Firebase Storage
+    private suspend fun pujarFitxers(fitxers: List<Uri>, userId: String, aportacioId: String, tipus: String): List<String> {
+        return fitxers.mapNotNull { uri ->
+            try {
+                val fitxerName = UUID.randomUUID().toString()
+                val fitxerRef = storage.reference.child("usuaris/$userId/aportacions/$aportacioId/$tipus/$fitxerName")
+                val uploadTask = fitxerRef.putFile(uri).await()
+                uploadTask.storage.downloadUrl.await().toString()
+            } catch (e: Exception) {
+                Log.e("NovaAportacioViewModel", "Error pujant fitxer: ${e.message}")
+                null
+            }
         }
     }
 }

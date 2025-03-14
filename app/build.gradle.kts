@@ -67,6 +67,7 @@ dependencies {
 
     implementation(libs.vision.common)
     implementation(project(":sdk"))
+    implementation(libs.testng)
 
 
     testImplementation(libs.junit)
@@ -139,6 +140,8 @@ dependencies {
     implementation(libs.gson)
 //per carrregar imatges rapid
     implementation (libs.coil)
+
+    implementation ("junit:junit:4.13.2")
 
 
 

@@ -1,8 +1,7 @@
 package com.deixebledenkaito.autotechmanuals.data.di
 
 
-import com.deixebledenkaito.autotechmanuals.data.network.firebstore.FirebaseDataBaseService
-import com.deixebledenkaito.autotechmanuals.data.repository.UserRepository
+
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
@@ -33,11 +32,5 @@ object DataModule {
     fun providerFirebaseStorage(): FirebaseStorage = Firebase.storage
 
 
-
-    @Provides
-    @Singleton
-    fun provideUserRepository(firebaseDataBaseService: FirebaseDataBaseService): UserRepository {
-        return UserRepository(firebaseDataBaseService)
-    }
 }
 

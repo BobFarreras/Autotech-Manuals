@@ -1,33 +1,28 @@
 package com.deixebledenkaito.autotechmanuals.ui.homeManuals
 
 
-import android.util.Log
-
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.deixebledenkaito.autotechmanuals.data.network.firebstore.FirebaseDataBaseService
-
+import com.deixebledenkaito.autotechmanuals.data.service.ManualService
+import com.deixebledenkaito.autotechmanuals.data.service.ModelService
 import com.deixebledenkaito.autotechmanuals.domain.Manuals
 import com.deixebledenkaito.autotechmanuals.domain.Model
 import com.deixebledenkaito.autotechmanuals.domain.User
-
-
+import com.deixebledenkaito.autotechmanuals.utils.Result
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-
 import dagger.hilt.android.lifecycle.HiltViewModel
 
 
 @HiltViewModel
 class HomeModelsViewModel @Inject constructor(
-    private val firebaseDataBaseService: FirebaseDataBaseService // Injecta el servei,
-
-
+    private val manualService: ManualService,
+    private val modelService: ModelService // Injecta el ModelService
 ) : ViewModel() {
 
-    // Estats i flows (sense canvis)
+    // Estats i flows
     private val _models = MutableStateFlow<List<Model>>(emptyList())
     val models: StateFlow<List<Model>> get() = _models
 
@@ -47,37 +42,33 @@ class HomeModelsViewModel @Inject constructor(
     val model: StateFlow<Model?> get() = _model
 
 
+    // Carrega els models i el manual per un manual específic
     fun loadModels(manualName: String) {
         viewModelScope.launch {
             _isLoading.value = true
-            try {
-                val models = firebaseDataBaseService.getModelsForManual(manualName)
-                _models.value = models
+            _error.value = null // Neteja errors previs
 
-
-                Log.d("HomeViewModel", "Models carregats des de: ${if (firebaseDataBaseService.isCacheValid()) "Cache" else "Firebase"}")
-            } catch (e: Exception) {
-                _error.value = "Error carregant models: ${e.message}"
-            } finally {
-                _isLoading.value = false
+            // Carrega el manual
+            when (val manualResult = manualService.getManualByName(manualName)) {
+                is Result.Success -> {
+                    _manual.value = manualResult.data // Actualitza el manual
+                }
+                is Result.Error -> {
+                    _error.value = "Error carregant manual: ${manualResult.message}"
+                }
             }
+
+            // Carrega els models
+            when (val modelsResult = modelService.getModelsForManual(manualName)) {
+                is Result.Success -> {
+                    _models.value = modelsResult.data // Actualitza els models
+                }
+                is Result.Error -> {
+                    _error.value = "Error carregant models: ${modelsResult.message}"
+                }
+            }
+
+            _isLoading.value = false
         }
     }
-
-    // Carregar manual utilitzant el servei
-    fun loadManual(manualName: String) {
-        viewModelScope.launch {
-            _isLoading.value = true
-            try {
-                val manual = firebaseDataBaseService.getManualByName(manualName)
-                _manual.value = manual
-            } catch (e: Exception) {
-                _error.value = "Error carregant manual: ${e.message}"
-            } finally {
-                _isLoading.value = false
-            }
-        }
-    }
-
-
 }

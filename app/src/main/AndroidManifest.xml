@@ -28,7 +28,7 @@
             android:label="@string/title_activity_home_manuals"
             android:theme="@style/Theme.AutotechManuals" />
         <activity
-            android:name=".ui.auth.login.signup.SignupActivity"
+            android:name=".ui.auth.signup.SignupActivity"
             android:exported="false"
             android:label="@string/title_activity_signup"
             android:theme="@style/Theme.AutotechManuals" />

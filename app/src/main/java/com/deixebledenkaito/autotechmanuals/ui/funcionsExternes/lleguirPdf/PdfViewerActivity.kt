@@ -1,12 +1,10 @@
 package com.deixebledenkaito.autotechmanuals.ui.funcionsExternes.lleguirPdf
 
 import android.graphics.Bitmap
-
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap

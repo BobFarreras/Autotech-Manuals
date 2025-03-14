@@ -9,20 +9,18 @@ import androidx.activity.viewModels
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
-
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import coil.compose.rememberImagePainter
 import com.deixebledenkaito.autotechmanuals.R
 import com.deixebledenkaito.autotechmanuals.ui.home.HomeActivity
-import com.deixebledenkaito.autotechmanuals.ui.auth.login.signup.SignupActivity
+import com.deixebledenkaito.autotechmanuals.ui.auth.signup.SignupActivity
 import com.google.firebase.FirebaseException
 import com.google.firebase.auth.PhoneAuthCredential
 import com.google.firebase.auth.PhoneAuthProvider
@@ -131,7 +129,6 @@ fun LoginScreen(loginViewModel: LoginViewModel) {
         }
     }
 }
-
 
 
 @Composable

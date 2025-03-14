@@ -1,7 +1,7 @@
 package com.deixebledenkaito.autotechmanuals.ui.splash
 
 import androidx.lifecycle.ViewModel
-import com.deixebledenkaito.autotechmanuals.data.network.auth.AuthService
+import com.deixebledenkaito.autotechmanuals.data.service.AuthService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

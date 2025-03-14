@@ -1,4 +1,4 @@
-package com.deixebledenkaito.autotechmanuals.ui.auth.login.signup.ui.theme
+package com.deixebledenkaito.autotechmanuals.ui.auth.signup.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle

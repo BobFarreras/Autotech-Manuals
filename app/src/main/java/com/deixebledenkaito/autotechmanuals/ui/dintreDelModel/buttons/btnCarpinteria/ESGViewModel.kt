@@ -7,7 +7,8 @@ import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.deixebledenkaito.autotechmanuals.data.network.firebstore.FirebaseDataBaseService
+
+import com.deixebledenkaito.autotechmanuals.data.service.PdfService
 import com.google.firebase.storage.StorageReference
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,7 +18,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ESGViewModel @Inject constructor(
-    private val firebaseDataBaseService: FirebaseDataBaseService
+    private val pdfService: PdfService
 ) : ViewModel() {
 
     private val _pdfs = MutableStateFlow<List<StorageReference>>(emptyList())
@@ -30,12 +31,12 @@ class ESGViewModel @Inject constructor(
     val errorMessage: StateFlow<String?> get() = _errorMessage
 
     // Carregar la llista de PDFs
-    fun carregarPdfsESG(manualId: String, modelId: String , carpinteriaId : String) {
+    fun carregarPdfsESG(manualId: String, modelId: String, carpinteriaId: String) {
         viewModelScope.launch {
             _isLoading.value = true
             _errorMessage.value = null
             try {
-                val pdfs = firebaseDataBaseService.obtenirPdfsDeLaCarpinteria(manualId, modelId, carpinteriaId )
+                val pdfs = pdfService.obtenirPdfsDeLaCarpinteria(manualId, modelId, carpinteriaId)
                 _pdfs.value = pdfs
             } catch (e: Exception) {
                 _errorMessage.value = "Error carregant PDFs: ${e.message}"
@@ -51,11 +52,11 @@ class ESGViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 // Descarregar el PDF
-                val uri = firebaseDataBaseService.descarregarPdf(pdfRef, context)
+                val uri = pdfService.descarregarPdf(pdfRef, context)
 
                 // Comprovar si el fitxer s'ha descarregat correctament
                 if (uri != null) {
-                    Log.d("DescarregarMimdesCarpinteria", "PDF descarregat: $uri")
+                    Log.d("ESGViewModel", "PDF descarregat: $uri")
 
                     // Obrir el PDF amb un visualitzador extern
                     val intent = Intent(Intent.ACTION_VIEW)
@@ -74,7 +75,7 @@ class ESGViewModel @Inject constructor(
                 }
             } catch (e: Exception) {
                 _errorMessage.value = "Error descarregant el PDF: ${e.message}"
-                Log.e("DescarregarMimdesCarpinteria", "Error descarregant PDF", e)
+                Log.e("ESGViewModel", "Error descarregant PDF", e)
             }
         }
     }

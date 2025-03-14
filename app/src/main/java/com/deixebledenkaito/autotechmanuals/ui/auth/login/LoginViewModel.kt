@@ -1,43 +1,44 @@
 package com.deixebledenkaito.autotechmanuals.ui.auth.login
 
-import com.deixebledenkaito.autotechmanuals.data.network.auth.Result
-import com.deixebledenkaito.autotechmanuals.data.network.auth.AuthErrorType
+
 
 import com.google.firebase.auth.FirebaseUser
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.deixebledenkaito.autotechmanuals.data.network.auth.AuthService
-
-
+import com.deixebledenkaito.autotechmanuals.data.service.AuthService
+import com.deixebledenkaito.autotechmanuals.utils.AuthErrorType
 import com.google.firebase.auth.PhoneAuthProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
+import com.deixebledenkaito.autotechmanuals.utils.Result
 
+// ui/viewmodel/LoginViewModel.kt
 @HiltViewModel
-class LoginViewModel @Inject constructor(private val authService: AuthService) : ViewModel() {
+class LoginViewModel @Inject constructor(
+    private val authService: AuthService
+) : ViewModel() {
+
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
 
     private val _loginState = MutableStateFlow<LoginState>(LoginState.Idle)
-    val loginState: StateFlow<LoginState> get() = _loginState
+    val loginState: StateFlow<LoginState> = _loginState
 
     private val _verificationId = MutableStateFlow<String?>(null)
     val verificationId: StateFlow<String?> = _verificationId
 
     fun login(email: String, password: String) {
         viewModelScope.launch {
-            _loginState.value = LoginState.Loading // Indica que s'està carregant
+            _loginState.value = LoginState.Loading
             when (val result = authService.login(email, password)) {
                 is Result.Success -> {
-                    _loginState.value = LoginState.Success(result.data) // Inici de sessió exitós
+                    _loginState.value = LoginState.Success(result.data)
                 }
                 is Result.Error -> {
-                    _loginState.value = LoginState.Error(result.message, result.type) // Error
+                    _loginState.value = LoginState.Error(result.message, result.type)
                 }
             }
         }
@@ -49,8 +50,13 @@ class LoginViewModel @Inject constructor(private val authService: AuthService) :
     ) {
         viewModelScope.launch {
             _isLoading.value = true
-            withContext(Dispatchers.IO) {
-                authService.loginWithPhone(phoneNumber, callback)
+            when (val result = authService.loginWithPhone(phoneNumber, callback)) {
+                is Result.Success -> {
+                    // Codi enviat correctament
+                }
+                is Result.Error -> {
+                    _loginState.value = LoginState.Error(result.message, result.type)
+                }
             }
             _isLoading.value = false
         }
@@ -59,13 +65,16 @@ class LoginViewModel @Inject constructor(private val authService: AuthService) :
     fun verifyCode(code: String, onSuccessVerification: () -> Unit) {
         viewModelScope.launch {
             _isLoading.value = true
-            val result = withContext(Dispatchers.IO) {
-                _verificationId.value?.let { verificationId ->
-                    authService.verifyCode(verificationId, code)
+            _verificationId.value?.let { verificationId ->
+                when (val result = authService.verifyCode(verificationId, code)) {
+                    is Result.Success -> {
+                        onSuccessVerification()
+                        _loginState.value = LoginState.Success(result.data)
+                    }
+                    is Result.Error -> {
+                        _loginState.value = LoginState.Error(result.message, result.type)
+                    }
                 }
-            }
-            if (result != null) {
-                onSuccessVerification()
             }
             _isLoading.value = false
         }

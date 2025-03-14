@@ -1,3 +1,5 @@
+
+
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -7,6 +9,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 
@@ -19,19 +22,19 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
+
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.rememberImagePainter
-
-
-
 import com.deixebledenkaito.autotechmanuals.ui.Profile.ProfileViewModel
 import com.deixebledenkaito.autotechmanuals.ui.aportacions.CardAportacions.AportacioCard
+import com.deixebledenkaito.autotechmanuals.ui.funcionsExternes.loadingDialog.LoadingDialog
 import com.deixebledenkaito.autotechmanuals.ui.home.ui.theme.BackgroundColor
 import com.deixebledenkaito.autotechmanuals.ui.home.ui.theme.title
 
 
 @OptIn(ExperimentalMaterial3Api::class)
+
 @Composable
 fun ProfileScreen(
     viewModel: ProfileViewModel = hiltViewModel(),
@@ -39,6 +42,7 @@ fun ProfileScreen(
 ) {
     val user by viewModel.user.collectAsState()
     val userAportacions by viewModel.userAportacions.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
 
     // Estat per controlar si es mostra el diàleg de selecció d'imatge
     var showImagePickerDialog by remember { mutableStateOf(false) }
@@ -51,10 +55,16 @@ fun ProfileScreen(
             viewModel.updateProfileImage(selectedImageUri)
         }
     }
+
+    // Carrega les dades de l'usuari quan la pantalla es mostra
     LaunchedEffect(Unit) {
         viewModel.loadUser()
     }
 
+    // Mostra el Dialog de càrrega si isLoading és true
+    if (isLoading) {
+        LoadingDialog(isLoading = isLoading, message = "Guardant imatge de perfil...")
+    }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -70,8 +80,9 @@ fun ProfileScreen(
                                 modifier = Modifier
                                     .size(70.dp) // Mida de la imatge
                                     .clip(CircleShape) // Forma rodona
-                                    .clickable { showImagePickerDialog = true } // Obrir diàleg en fer clic
-
+                                    .clickable {
+                                        showImagePickerDialog = true
+                                    } // Obrir diàleg en fer clic
                             )
                             Spacer(modifier = Modifier.width(8.dp)) // Espai entre la imatge i el text
                         }
@@ -79,10 +90,9 @@ fun ProfileScreen(
                             Spacer(modifier = Modifier.height(2.dp))
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Text(
-                                text = user?.name ?: "Usuari",
-                                style = MaterialTheme.typography.titleLarge
-
-                            )
+                                    text = user?.name ?: "Usuari",
+                                    style = MaterialTheme.typography.titleLarge
+                                )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Icon(
                                     imageVector = Icons.Default.Star,
@@ -102,16 +112,13 @@ fun ProfileScreen(
                                 style = MaterialTheme.typography.bodyMedium
                             )
                             Spacer(modifier = Modifier.height(4.dp))
-
                         }
-                        
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = BackgroundColor, // Fons de la TopAppBar
                     titleContentColor = title // Color del text
                 )
-
             )
         },
         floatingActionButton = {
@@ -128,39 +135,49 @@ fun ProfileScreen(
                 .fillMaxSize()
                 .padding(16.dp)
         ) {
-
-
-
-
             items(userAportacions) { aportacio ->
-                AportacioCard(aportacio = aportacio, onDelete = { viewModel.eliminarAportacio(aportacio) })
+                AportacioCard(
+                    aportacio = aportacio,
+                    onDelete = { viewModel.eliminarAportacio(aportacio) })
                 Spacer(modifier = Modifier.height(8.dp))
             }
         }
     }
-    // Diàleg per seleccionar una nova imatge
+
     if (showImagePickerDialog) {
         AlertDialog(
             onDismissRequest = { showImagePickerDialog = false },
             title = { Text("Canviar imatge de perfil") },
-            text = { Text("Selecciona una nova imatge de la galeria.") },
+            text = {
+                Column {
+                    Text("Selecciona una nova imatge de la galeria.")
+                    if (isLoading) {
+                        Spacer(modifier = Modifier.height(16.dp))
+                        CircularProgressIndicator()
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text("Pujant imatge...", style = MaterialTheme.typography.bodyMedium)
+                    }
+                }
+            },
             confirmButton = {
                 Button(
                     onClick = {
                         showImagePickerDialog = false
-                        launcher.launch("image/*") // Obrir la galeria
-                    }
+                        launcher.launch("image/*")
+                    },
+                    enabled = !isLoading // Desactiva el botó mentre es puja la imatge
                 ) {
                     Text("Seleccionar imatge")
                 }
             },
             dismissButton = {
-                Button(onClick = { showImagePickerDialog = false }) {
+                Button(
+                    onClick = { showImagePickerDialog = false },
+                    enabled = !isLoading // Desactiva el botó mentre es puja la imatge
+                ) {
                     Text("Cancel·lar")
                 }
             }
         )
     }
 }
-
-

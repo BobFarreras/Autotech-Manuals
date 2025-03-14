@@ -7,7 +7,7 @@ import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.deixebledenkaito.autotechmanuals.data.network.firebstore.FirebaseDataBaseService
+import com.deixebledenkaito.autotechmanuals.data.service.PdfService
 import com.google.firebase.storage.StorageReference
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,7 +17,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class DescarregarManualsViewModel @Inject constructor(
-    private val firebaseDataBaseService: FirebaseDataBaseService
+
+    private val pdfService: PdfService
 ) : ViewModel() {
 
     private val _pdfs = MutableStateFlow<List<StorageReference>>(emptyList())
@@ -35,7 +36,7 @@ class DescarregarManualsViewModel @Inject constructor(
             _isLoading.value = true
             _errorMessage.value = null
             try {
-                val pdfs = firebaseDataBaseService.obtenirPdfsDelModel(manualId, modelId)
+                val pdfs = pdfService.obtenirPdfsDelModel(manualId, modelId)
                 _pdfs.value = pdfs
             } catch (e: Exception) {
                 _errorMessage.value = "Error carregant PDFs: ${e.message}"
@@ -51,7 +52,7 @@ class DescarregarManualsViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 // Descarregar el PDF
-                val uri = firebaseDataBaseService.descarregarPdf(pdfRef, context)
+                val uri = pdfService.descarregarPdf(pdfRef, context)
 
                 // Comprovar si el fitxer s'ha descarregat correctament
                 if (uri != null) {

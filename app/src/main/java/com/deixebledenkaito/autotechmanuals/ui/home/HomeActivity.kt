@@ -4,26 +4,20 @@ import ProfileScreen
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
-
 import androidx.activity.compose.setContent
-
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
-
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.foundation.Image
-
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -31,13 +25,10 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
-
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -48,11 +39,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.layout.ContentScale
-
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
@@ -61,27 +50,20 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-
 import coil.compose.rememberImagePainter
 import com.deixebledenkaito.autotechmanuals.R
-
 import com.deixebledenkaito.autotechmanuals.domain.Manuals
 import com.deixebledenkaito.autotechmanuals.domain.RutaGuardada
-
 import com.deixebledenkaito.autotechmanuals.ui.dintreDelModel.ModelDetailScreen
 import com.deixebledenkaito.autotechmanuals.ui.dintreDelModel.buttons.btnErrors.ErrorsDelModelScreen
 import com.deixebledenkaito.autotechmanuals.ui.dintreDelModel.buttons.btnManuals.DescarregarManualsScreen
 import com.deixebledenkaito.autotechmanuals.ui.dintreDelModel.buttons.btnParametres.AjustListScreen
 import com.deixebledenkaito.autotechmanuals.ui.aportacions.NovaAportacioScreen
 import com.deixebledenkaito.autotechmanuals.ui.aportacions.aportacioCardDetail.AportacioCardDetailHome
-
 import com.deixebledenkaito.autotechmanuals.ui.funcionsExternes.autoMidesImg.CameraSizeDetectorApp
-
-
 import com.deixebledenkaito.autotechmanuals.ui.home.ui.theme.BackgroundColor
 import com.deixebledenkaito.autotechmanuals.ui.home.ui.theme.title
 import com.deixebledenkaito.autotechmanuals.ui.homeManuals.HomeManualScreen
@@ -93,9 +75,7 @@ import com.deixebledenkaito.autotechmanuals.ui.dintreDelModel.buttons.btnConecci
 import com.deixebledenkaito.autotechmanuals.ui.funcionsExternes.autoDespiece.AutoDespieceHome
 import com.deixebledenkaito.autotechmanuals.ui.funcionsExternes.autoDespiece.CalculScreen
 import com.deixebledenkaito.autotechmanuals.ui.funcionsExternes.sharedViewModel.SharedViewModel
-
 import dagger.hilt.android.AndroidEntryPoint
-
 import java.text.SimpleDateFormat
 import java.util.Date
 
@@ -117,13 +97,12 @@ fun HomeScreen(viewModel: HomeViewModel, navController: NavController,  sharedVi
     val lastManual by viewModel.lastManual.collectAsState()
     val user by viewModel.user.collectAsState()
 
-
     var showSearchDialog by remember { mutableStateOf(false) }
     var showMenu by remember { mutableStateOf(false) }
 
-
     // Observar l'estat de les rutes guardades
     val rutesGuardades by sharedViewModel.rutesGuardades.collectAsState()
+    Log.d("HomeScreen", "Rutes guardades: ${rutesGuardades.size}")
 
     val MyCustomTextStyle = TextStyle(
         fontSize = 18.sp, // Mida del text
@@ -135,8 +114,8 @@ fun HomeScreen(viewModel: HomeViewModel, navController: NavController,  sharedVi
 
     LaunchedEffect(Unit) {
         viewModel.loadAllData()
-        // Carregar les rutes guardades quan es carrega la pantalla
 
+        // Carregar les rutes guardades quan es carrega la pantalla
         sharedViewModel.carregarRutesGuardades()
 
     }
@@ -147,59 +126,49 @@ fun HomeScreen(viewModel: HomeViewModel, navController: NavController,  sharedVi
                 modifier = Modifier.height(110.dp),
                 title = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        // Imatge de perfil (si existeix)
                         user?.profileImageUrl?.let { imageUrl ->
                             Image(
                                 painter = rememberImagePainter(imageUrl),
                                 contentDescription = "Imatge de perfil",
-                                contentScale = ContentScale.FillBounds, // Evita que la imatge es talli
+                                contentScale = ContentScale.FillBounds,
                                 modifier = Modifier
-                                    .size(70.dp) // Mida de la imatge
-                                    .clip(CircleShape) // Forma rodona
-
+                                    .size(70.dp)
+                                    .clip(CircleShape)
                             )
-                            Spacer(modifier = Modifier.width(8.dp)) // Espai entre la imatge i el text
+                            Spacer(modifier = Modifier.width(8.dp))
                         }
-                        // Text de benvinguda
                         Text("Benvingut, ${user?.name ?: "Usuari"}")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = BackgroundColor, // Fons de la TopAppBar
-                    titleContentColor = title // Color del text
+                    containerColor = BackgroundColor,
+                    titleContentColor = title
                 ),
                 actions = {
-                    // Icona per obrir el menú desplegable
-                    IconButton(
-                        onClick = { showMenu = !showMenu }
-                    ) {
+                    IconButton(onClick = { showMenu = !showMenu }) {
                         Icon(Icons.Default.MoreVert, contentDescription = "Més opcions")
                     }
 
-
-                    // Animació per al menú desplegable
                     AnimatedVisibility(
                         visible = showMenu,
                         enter = fadeIn(animationSpec = tween(300)) + scaleIn(
-                            initialScale = 0.5f, // Comença petit
-                            transformOrigin = TransformOrigin(1f, 0f), // Parteix de la part inferior dreta
+                            initialScale = 0.5f,
+                            transformOrigin = TransformOrigin(1f, 0f),
                             animationSpec = tween(200)
                         ),
                         exit = fadeOut(animationSpec = tween(300)) + scaleOut(
-                            targetScale = 0.5f, // Es fa petit
-                            transformOrigin = TransformOrigin(1f, 0f), // Acaba a la part inferior dreta
+                            targetScale = 0.5f,
+                            transformOrigin = TransformOrigin(1f, 0f),
                             animationSpec = tween(200)
                         ),
-                        modifier = Modifier.background(Color.White) // Fons blanc
+                        modifier = Modifier.background(Color.White)
                     ) {
                         Spacer(modifier = Modifier.height(32.dp))
-                        // Menú desplegable
                         DropdownMenu(
                             expanded = showMenu,
                             onDismissRequest = { showMenu = false },
-                            modifier = Modifier.background(Color.White) // Fons blanc
+                            modifier = Modifier.background(Color.White)
                         ) {
-                            // Opció: Tancar sessió
                             DropdownMenuItem(
                                 text = {
                                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -209,10 +178,7 @@ fun HomeScreen(viewModel: HomeViewModel, navController: NavController,  sharedVi
                                             tint = Color.Black
                                         )
                                         Spacer(modifier = Modifier.width(8.dp))
-                                        Text(
-                                            text = "Tancar sessió",
-                                            fontSize = 16.sp // Text més gran
-                                        )
+                                        Text(text = "Tancar sessió", fontSize = 16.sp)
                                     }
                                 },
                                 onClick = {
@@ -225,7 +191,6 @@ fun HomeScreen(viewModel: HomeViewModel, navController: NavController,  sharedVi
                                 }
                             )
 
-                            // Opció: Perfil
                             DropdownMenuItem(
                                 text = {
                                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -235,10 +200,7 @@ fun HomeScreen(viewModel: HomeViewModel, navController: NavController,  sharedVi
                                             tint = Color.Black
                                         )
                                         Spacer(modifier = Modifier.width(8.dp))
-                                        Text(
-                                            text = "Perfil",
-                                            fontSize = 16.sp // Text més gran
-                                        )
+                                        Text(text = "Perfil", fontSize = 16.sp)
                                     }
                                 },
                                 onClick = {
@@ -247,7 +209,6 @@ fun HomeScreen(viewModel: HomeViewModel, navController: NavController,  sharedVi
                                 }
                             )
 
-                            // Opció: Configuració
                             DropdownMenuItem(
                                 text = {
                                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -257,10 +218,7 @@ fun HomeScreen(viewModel: HomeViewModel, navController: NavController,  sharedVi
                                             tint = Color.Black
                                         )
                                         Spacer(modifier = Modifier.width(8.dp))
-                                        Text(
-                                            text = "CameraIA",
-                                            fontSize = 16.sp // Text més gran
-                                        )
+                                        Text(text = "CameraIA", fontSize = 16.sp)
                                     }
                                 },
                                 onClick = {
@@ -269,7 +227,6 @@ fun HomeScreen(viewModel: HomeViewModel, navController: NavController,  sharedVi
                                 }
                             )
 
-                            // Opció: Buscar
                             DropdownMenuItem(
                                 text = {
                                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -279,10 +236,7 @@ fun HomeScreen(viewModel: HomeViewModel, navController: NavController,  sharedVi
                                             tint = Color.Black
                                         )
                                         Spacer(modifier = Modifier.width(8.dp))
-                                        Text(
-                                            text = "Buscar",
-                                            fontSize = 16.sp // Text més gran
-                                        )
+                                        Text(text = "Buscar", fontSize = 16.sp)
                                     }
                                 },
                                 onClick = {
@@ -295,89 +249,95 @@ fun HomeScreen(viewModel: HomeViewModel, navController: NavController,  sharedVi
                 }
             )
         },
-        containerColor = BackgroundColor // Color de fons de tota l'aplicació
+        containerColor = BackgroundColor
     ) { paddingValues ->
-        Column(
+        LazyColumn(
             modifier = Modifier
                 .padding(paddingValues)
+                .fillMaxSize()
+                .padding(6.dp)
 
-                .padding(4.dp)
         ) {
             // Secció de rutes guardades
-            Text("Rutes Guardades", style = MyCustomTextStyle)
-            Spacer(modifier = Modifier.height(4.dp))
-            if (rutesGuardades.isEmpty()) {
-                Text(
-                    text = "No tens cap ruta guardada.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
-                        .align(Alignment.CenterHorizontally)
-                )
-            } else {
-                LazyRow {
-                    items(rutesGuardades) { ruta ->
-                        RutaGuardadaCard(
-                            ruta = ruta,
-                            onClick = {
-                                navController.navigate(ruta.ruta) // Navegar a la ruta guardada
-                            }
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
+            item {
+                Text("Rutes Guardades", style = MyCustomTextStyle)
+                Spacer(modifier = Modifier.height(4.dp))
+                if (rutesGuardades.isEmpty()) {
+                    Text(
+                        text = "No tens cap ruta guardada.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
+
+                    )
+                } else {
+                    LazyRow {
+                        items(
+                            items = rutesGuardades,
+                            key = { ruta -> ruta.id } // Utilitza un identificador únic per a cada ruta
+                        ) { ruta ->
+                            RutaGuardadaCard(
+                                ruta = ruta,
+                                onClick = {
+                                    navController.navigate(ruta.ruta)
+                                }
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                        }
                     }
                 }
-            }
-            Spacer(modifier = Modifier.height(16.dp))
-            // Mostra l'últim manual utilitzat
-            lastManual?.let { manual ->
-                Log.d("UltimManual", lastManual.toString())
-                Text("Últim manual utilitzat", style = MyCustomTextStyle)
-
-                Spacer(modifier = Modifier.height(4.dp))
-                ManualItem(manual = manual, onClick = {
-                    navController.navigate("homeManual/${manual.nom}")
-                })
                 Spacer(modifier = Modifier.height(16.dp))
             }
 
-            // Llista de manuals més populars (horitzontal)
-            Text("Manuals més populars", style = MyCustomTextStyle)
-
-            Spacer(modifier = Modifier.height(4.dp))
-            LazyRow {
-                items(topManuals) { manual ->
-                    ManualItem(manual = manual, modifier = Modifier.width(200.dp), onClick = {
-                        navController.navigate("homeManual/${manual.nom}") // Navegació amb argument
+            // Mostra l'últim manual utilitzat
+            lastManual?.let { manual ->
+                item {
+                    Log.d("UltimManual", lastManual.toString())
+                    Text("Últim manual utilitzat", style = MyCustomTextStyle)
+                    Spacer(modifier = Modifier.height(4.dp))
+                    ManualItem(manual = manual, onClick = {
+                        navController.navigate("homeManual/${manual.nom}")
                     })
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
                 }
             }
-            Spacer(modifier = Modifier.height(16.dp))
+
+            // Llista de manuals més populars (horitzontal)
+            item {
+                Text("Manuals més populars", style = MyCustomTextStyle)
+                Spacer(modifier = Modifier.height(4.dp))
+                LazyRow {
+                    items(topManuals) { manual ->
+                        ManualItem(manual = manual, modifier = Modifier.width(200.dp), onClick = {
+                            navController.navigate("homeManual/${manual.nom}")
+                        })
+                        Spacer(modifier = Modifier.width(8.dp))
+                    }
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+            }
 
             // Llista de tots els manuals (vertical en graella de 2 columnes)
-            Text("Tots els manuals", style = MyCustomTextStyle)
-
-            Spacer(modifier = Modifier.height(4.dp))
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(2), // 2 columnes
-                modifier = Modifier
-                    .fillMaxWidth(),
-
-                contentPadding = PaddingValues(2.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp),
-                horizontalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                items(manuals) { manual ->
-                    ManualItem(manual = manual, onClick = {
-                        viewModel.incrementManualUsage(manual.id) // Incrementar l'ús del manual
-                        viewModel.updateLastUsedManual(manual.nom) // Actualitzar l'últim manual utilitz
-                        navController.navigate("homeManual/${manual.nom}") // Navegació amb argument
-
-                    })
+            item {
+                Text("Tots els manuals", style = MyCustomTextStyle)
+                Spacer(modifier = Modifier.height(4.dp))
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(2),
+                    modifier = Modifier.fillMaxWidth().heightIn(max = 800.dp),
+                    contentPadding = PaddingValues(2.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    items(manuals) { manual ->
+                        ManualItem(manual = manual, onClick = {
+                            viewModel.incrementManualUsage(manual.id)
+                            viewModel.updateLastUsedManual(manual.nom)
+                            navController.navigate("homeManual/${manual.nom}")
+                        })
+                    }
                 }
             }
-
         }
     }
 
@@ -385,7 +345,7 @@ fun HomeScreen(viewModel: HomeViewModel, navController: NavController,  sharedVi
         SearchDialog(
             onDismiss = { showSearchDialog = false },
             onSearch = { query ->
-                navController.navigate("searchResults/$query") // Navega a la pantalla de result
+                navController.navigate("searchResults/$query")
             }
         )
     }
@@ -638,7 +598,7 @@ fun RutaGuardadaCard(ruta: RutaGuardada, onClick: () -> Unit) {
     Card(
         modifier = Modifier
             .width(150.dp)
-            .height(105.dp)
+            .height(80.dp)
             .clickable { onClick() }
             .background(Color.White)
             .padding(4.dp)
@@ -651,15 +611,17 @@ fun RutaGuardadaCard(ruta: RutaGuardada, onClick: () -> Unit) {
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
     ) {
         Column(modifier = Modifier
-
-            .background(Color.White) // Defineix el color de fons aquí
-
+            .fillMaxWidth()
+            .fillMaxHeight()
+            .background(Color.White), // Defineix el color de fons aquí
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(text = ruta.nom, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(6.dp), textAlign = TextAlign.Center)
+            Text(text = ruta.nom, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(4.dp), textAlign = TextAlign.Center)
             Text(
-                style = MaterialTheme.typography.bodySmall,modifier = Modifier.padding(6.dp), textAlign = TextAlign.Center,
-                text = "Guardat el: ${SimpleDateFormat("dd/MM/yyyy").format(Date(ruta.dataGuardat))}"
-            )
+                text = SimpleDateFormat("dd/MM/yyyy").format(Date(ruta.dataGuardat)),
+                style = TextStyle(color = Color. Gray,fontSize = 10.sp,fontFamily = FontFamily. Monospace),
+                modifier = Modifier.padding(6.dp), textAlign = TextAlign.Center)
         }
     }
 }

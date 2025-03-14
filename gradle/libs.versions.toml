@@ -43,6 +43,7 @@ cameraLifecycle = "1.4.1"
 
 ui = "1.7.8"
 visionCommon = "17.3.0"
+testng = "6.9.6"
 
 
 [libraries]
@@ -101,6 +102,7 @@ tensorflow-lite-task-vision = { module = "org.tensorflow:tensorflow-lite-task-vi
 
 ui = { module = "androidx.compose.ui:ui", version.ref = "ui" }
 vision-common = { group = "com.google.mlkit", name = "vision-common", version.ref = "visionCommon" }
+testng = { group = "org.testng", name = "testng", version.ref = "testng" }
 
 
 

@@ -56,6 +56,7 @@ import com.deixebledenkaito.autotechmanuals.domain.Model
 import dagger.hilt.android.AndroidEntryPoint
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
 import com.deixebledenkaito.autotechmanuals.domain.Manuals
 
 // AIXOO ES DINTRE DEL MANUAL AMB ELS DIFERENTS MODELS
@@ -72,7 +73,6 @@ class HomeManualsActivity : ComponentActivity() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeManualScreen(
-
     manualName: String,
     viewModel: HomeModelsViewModel = hiltViewModel(),
     navController: NavController
@@ -87,7 +87,7 @@ fun HomeManualScreen(
     // Carregar models i manual quan la pantalla s'obri
     LaunchedEffect(manualName) {
         viewModel.loadModels(manualName)
-        viewModel.loadManual(manualName)
+
     }
 
     Scaffold(
@@ -102,6 +102,7 @@ fun HomeManualScreen(
                         )
                     }
                 }
+
             )
         }
     ) { paddingValues ->
@@ -211,8 +212,8 @@ fun ManualHeader(manual: Manuals?) {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // Imatge del manual
-            Image(
-                painter = rememberImagePainter(manual.imageResId),
+            AsyncImage(
+                model = manual.imageResId, // Això pot ser una URL, un URI, un recurs drawable, etc.
                 contentDescription = "Manual Image",
                 modifier = Modifier
                     .size(120.dp)
