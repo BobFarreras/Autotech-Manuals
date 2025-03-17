@@ -1,3 +1,5 @@
+@file:Suppress("UNREACHABLE_CODE")
+
 package com.deixebledenkaito.autotechmanuals.ui.dintreDelModel
 
 import androidx.compose.foundation.Image
@@ -7,6 +9,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -49,13 +52,18 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
 import coil.compose.rememberImagePainter
 import com.deixebledenkaito.autotechmanuals.domain.Model
 import com.deixebledenkaito.autotechmanuals.domain.RutaGuardada
+import com.deixebledenkaito.autotechmanuals.ui.aportacions.CardAportacions.AportacioAltresUsuarisCard
+import com.deixebledenkaito.autotechmanuals.ui.aportacions.CardAportacions.AportacioPropiaCard
 import com.deixebledenkaito.autotechmanuals.ui.funcionsExternes.loadingDialog.MessageDialog
 import com.deixebledenkaito.autotechmanuals.ui.funcionsExternes.saveRouteButton.SaveRouteButton
 import com.deixebledenkaito.autotechmanuals.ui.funcionsExternes.sharedViewModel.SharedViewModel
+import com.google.firebase.auth.FirebaseAuth
 import java.util.UUID
+
 //AIXO ES DINTRE EL MODEL AMB ELS BOTONS I LES APORTACIONS
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -117,7 +125,7 @@ fun ModelDetailScreen(
             )
         },
 
-    ) { paddingValues ->
+        ) { paddingValues ->
         if (isLoading) {
             Column(
                 modifier = Modifier
@@ -209,7 +217,7 @@ fun ModelDetailScreen(
                         modifier = Modifier.padding(16.dp)
                     )
                 } else {
-                    val coroutineScope = rememberCoroutineScope()
+
 
                     LazyColumn(
                         modifier = Modifier
@@ -217,14 +225,14 @@ fun ModelDetailScreen(
                             .padding(horizontal = 8.dp)
                     ) {
                         items(aportacions) { aportacio ->
-
-
-                            AportacioCardDetail(
-                                aportacio = aportacio ,
+                            AportacioAltresUsuarisCard(
+                                aportacio = aportacio,
                                 onClick = {
                                     // Navegar a la nova pantalla amb l'ID de l'aportació
                                     navController.navigate("aportacioDetailHome/${aportacio.id}")
-                                }
+                                },
+                                onLike = { viewModel.likeAportacio(aportacio.id, manualId, modelId) }, // Passa la funció de like
+                                onDislike = { viewModel.dislikeAportacio(aportacio.id, manualId, modelId) }, // Passa la funció de dislike
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                         }
@@ -299,4 +307,5 @@ fun ModelHeader(model: Model?) {
         }
     }
 }
+
 

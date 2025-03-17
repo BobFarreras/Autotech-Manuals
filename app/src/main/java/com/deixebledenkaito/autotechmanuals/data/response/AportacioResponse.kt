@@ -1,6 +1,7 @@
 package com.deixebledenkaito.autotechmanuals.data.response
 
 import com.deixebledenkaito.autotechmanuals.domain.AportacioUser
+import com.deixebledenkaito.autotechmanuals.domain.ImageVideo
 
 data class AportacioResponse(
     val id: String,
@@ -8,15 +9,14 @@ data class AportacioResponse(
     val manual: String,
     val title: String,
     val descripcio: String,
-    val imageUrls: List<String>,
+    val imageVideos: List<ImageVideo> = emptyList(), // Llista d'imatges i vídeos
     val likes: Int,
     val noLikes: Int,
     val usageCount: Long,
     val pdfUrls: String?, // URL del PDF (opcional)
-    val videoUrls: String?, // Nou camp per a l'URL del vídeo (opcional)
     val data: String, // Nou camp per a la data
-    val hora: String ,// Nou camp per a l'hora
-    val user:String,
+    val hora: String, // Nou camp per a l'hora
+    val user: String,
     val userName: String,
     val usersWhoLiked: MutableList<String> = mutableListOf(), // Canvia a MutableList
     val usersWhoDisliked: MutableList<String> = mutableListOf() // Canvia a MutableList
@@ -28,12 +28,11 @@ data class AportacioResponse(
             manual = manual,
             title = title,
             descripcio = descripcio,
-            imageUrls = imageUrls.toString(),
+            imageVideos = imageVideos, // Nou camp per a imatges i vídeos
             likes = likes,
             noLikes = noLikes,
             usageCount = usageCount,
             pdfUrls = pdfUrls,
-            videoUrls = videoUrls, // Nou camp per al vídeo
             data = data,
             hora = hora,
             user = user,

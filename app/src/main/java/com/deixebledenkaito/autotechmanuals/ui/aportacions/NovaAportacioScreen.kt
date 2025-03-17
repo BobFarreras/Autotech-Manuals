@@ -31,6 +31,7 @@ import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -74,6 +75,7 @@ fun NovaAportacioScreen(
     viewModel: NovaAportacioViewModel = hiltViewModel(),
     navController: NavController
 ) {
+    // Estats de la UI
     val manuals by viewModel.manuals.collectAsState()
     val models by viewModel.models.collectAsState()
     val selectedManual = remember { mutableStateOf("") }
@@ -86,8 +88,8 @@ fun NovaAportacioScreen(
     val pdfUris = remember { mutableStateListOf<Uri>() }
     val videoUris = remember { mutableStateListOf<Uri>() }
 
-
-
+    // Progrés de pujada
+    val uploadProgress by viewModel.uploadProgress.collectAsState()
 
     // URI temporal per guardar la foto capturada amb la càmera
     val fotoCapturadaUri = remember { mutableStateOf<Uri?>(null) }
@@ -111,23 +113,23 @@ fun NovaAportacioScreen(
             fotoTemporal
         )
     }
+
+    // Estat de càrrega
     val isLoading by viewModel.isLoading.collectAsState()
+
+    // Snackbar per mostrar notificacions
     val snackbarHostState = remember { SnackbarHostState() }
-//    val mostrarNotificacio = remember { mutableStateOf(false) }
-//    val missatgeNotificacio = remember { mutableStateOf("") }
+
+    // Escoltar canvis en la notificació del ViewModel
     val notificacio by viewModel.notificacio.collectAsState()
-    // Escoltar les notificacions del ViewModel
-// Escoltar canvis en la notificació del ViewModel
     LaunchedEffect(notificacio) {
         if (notificacio.isNotEmpty()) {
-            // Mostrar la notificació
             snackbarHostState.showSnackbar(notificacio)
-
-
-            navController.popBackStack() // Tornar a ProfileScreen
+            navController.popBackStack() // Tornar a la pantalla anterior
         }
     }
-    // Definir el launcher per a la selecció d'imatges
+
+    // Launcher per seleccionar imatges
     val launcherImatges = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
         onResult = { uri ->
@@ -148,6 +150,7 @@ fun NovaAportacioScreen(
             }
         }
     )
+
     // Estat per controlar si es mostra el diàleg
     val mostrarDialog = remember { mutableStateOf(false) }
 
@@ -167,64 +170,43 @@ fun NovaAportacioScreen(
         )
     }
 
-
-// Launcher per seleccionar múltiples PDFs
+    // Launcher per seleccionar múltiples PDFs
     val launcherPDFs = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenMultipleDocuments(),
         onResult = { uris ->
-            uris?.let {
+            uris.let {
                 pdfUris.addAll(it)
             }
         }
     )
 
-
-
-// Launcher per seleccionar múltiples vídeos
+    // Launcher per seleccionar múltiples vídeos
     val launcherVideos = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenMultipleDocuments(),
         onResult = { uris ->
-            uris?.let {
+            uris.let {
                 videoUris.addAll(it)
             }
         }
     )
 
     Scaffold(
-        snackbarHost = {
-            SnackbarHost(hostState = snackbarHostState)
-        },
-        topBar = {
-            TopAppBar(
-                title = { Text("Nova Aportació") },
-                navigationIcon = {
-                    IconButton(
-                        onClick = { navController.popBackStack() },
-                        enabled = !isLoading
-                    ) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Tornar")
-                    }
-                }
-            )
-        },
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
+                    // Cridar la funció no suspendida del ViewModel
                     viewModel.guardarAportacio(
-                        selectedManual.value,
-                        selectedModel.value,
-                        title.value,
-                        descripcio.value,
-                        imatges,
-                        pdfUris,
-                        videoUris
-
+                        context = context,
+                        manual = selectedManual.value,
+                        model = selectedModel.value,
+                        title = title.value,
+                        descripcio = descripcio.value,
+                        imatges = imatges,
+                        pdfUris = pdfUris,
+                        videoUris = videoUris
                     )
-
                 },
                 modifier = Modifier.padding(16.dp)
-
-
             ) {
                 if (isLoading) {
                     CircularProgressIndicator(modifier = Modifier.size(24.dp), color = Color.White)
@@ -312,19 +294,21 @@ fun NovaAportacioScreen(
                         }
                     }
                     Spacer(modifier = Modifier.height(16.dp))
-                    // Title
-                    Text("Titol", style = MaterialTheme.typography.titleMedium)
+
+                    // Títol de l'aportació
+                    Text("Títol", style = MaterialTheme.typography.titleMedium)
                     Spacer(modifier = Modifier.height(8.dp))
                     TextField(
                         value = title.value,
                         onValueChange = { title.value = it },
                         modifier = Modifier.fillMaxWidth(),
-                        label = { Text("Titol de l'aportació") },
+                        label = { Text("Títol de l'aportació") },
                         maxLines = 3,
                         enabled = !isLoading
                     )
                     Spacer(modifier = Modifier.height(16.dp))
-                    // Descripció
+
+                    // Descripció de l'aportació
                     Text("Descripció", style = MaterialTheme.typography.titleMedium)
                     Spacer(modifier = Modifier.height(8.dp))
                     TextField(
@@ -377,6 +361,7 @@ fun NovaAportacioScreen(
                         }
                     }
                     Spacer(modifier = Modifier.height(16.dp))
+
                     // Pujar vídeos
                     Text("Puja vídeos", style = MaterialTheme.typography.titleMedium)
                     Spacer(modifier = Modifier.height(8.dp))
@@ -403,7 +388,7 @@ fun NovaAportacioScreen(
                             ) {
                                 // Reproductor de vídeo
                                 VideoPlayer(
-                                    videoUri = uri,
+                                    videoUrl = uri.toString(),
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .height(200.dp)
@@ -421,8 +406,6 @@ fun NovaAportacioScreen(
                         }
                     }
                     Spacer(modifier = Modifier.height(16.dp))
-
-
 
                     // Pujar PDFs
                     Text("Puja PDFs", style = MaterialTheme.typography.titleMedium)
@@ -449,9 +432,9 @@ fun NovaAportacioScreen(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Image(
-                                    painter = painterResource(id = R.drawable.logopdf), // "my_image" és el nom del fitxer PNG
-                                    contentDescription = "PDF Icon", // Descripció per a accessibilitat
-                                    modifier = Modifier.size(40.dp) // Mida de la imatge
+                                    painter = painterResource(id = R.drawable.logopdf),
+                                    contentDescription = "PDF Icon",
+                                    modifier = Modifier.size(40.dp)
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
@@ -478,6 +461,17 @@ fun NovaAportacioScreen(
                     modifier = Modifier
                         .align(Alignment.Center)
                         .size(48.dp)
+                )
+            }
+
+            // Mostrar el progrés de pujada
+            if (uploadProgress > 0f) {
+                LinearProgressIndicator(
+                    progress = uploadProgress,
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .fillMaxWidth()
+                        .padding(16.dp)
                 )
             }
         }

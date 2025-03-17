@@ -1,11 +1,14 @@
 package com.deixebledenkaito.autotechmanuals.data.service
 
 
+import android.content.Context
+import android.net.Uri
 import android.util.Log
 import com.deixebledenkaito.autotechmanuals.data.repository.AportacioRepository
 import com.deixebledenkaito.autotechmanuals.data.repository.ManualAportacioRepository
 import com.deixebledenkaito.autotechmanuals.data.repository.StorageRepository
 import com.deixebledenkaito.autotechmanuals.domain.AportacioUser
+import com.deixebledenkaito.autotechmanuals.domain.ImageVideo
 import com.deixebledenkaito.autotechmanuals.utils.AuthErrorType
 import javax.inject.Inject
 import com.deixebledenkaito.autotechmanuals.utils.Result
@@ -18,22 +21,40 @@ class AportacioService @Inject constructor(
 ) {
     suspend fun getAportacionsByUser(userId: String): List<AportacioUser> {
         return when (val result = aportacioRepository.getAportacionsByUser(userId)) {
-            is Result.Success -> result.data
+
+            is Result.Success -> {
+                Log.d("AportacioService", "Aportacions de l'usuari: ${result.data}")
+                result.data
+            }
+
             is Result.Error -> {
-                Log.e("AportacioService", "Error obtenint aportacions: ${result.message}")
+                Log.d("AportacioService", "Error obtenint aportacions: ${result.message}")
                 emptyList()
             }
         }
     }
 
-    suspend fun addAportacio(userId: String, aportacio: AportacioUser): Result<Boolean> {
+    suspend fun addAportacio(aportacio: AportacioUser): Result<Boolean> {
         return try {
-            val success = aportacioRepository.addAportacio(userId, aportacio)
+            val success = aportacioRepository.addAportacio(aportacio.user, aportacio)
+            addAportacioEnElManual(aportacio)
             Result.Success(success)
         } catch (e: Exception) {
+            Log.e("AportacioService", "Error guardant aportació: ${e.message}")
             Result.Error(e.message ?: "Error desconegut", AuthErrorType.INVALID_CODE)
         }
     }
+
+    suspend fun pujarFitxersIGenerarMiniatures(
+        context: Context,
+        fitxers: List<Uri>,
+        userId: String,
+        aportacioId: String,
+        tipus: String
+    ): List<ImageVideo> {
+        return storageRepository.pujarFitxersIGenerarMiniatures(context, fitxers, userId, aportacioId, tipus)
+    }
+
 
     suspend fun addAportacioEnElManual(aportacio: AportacioUser): Boolean {
         return when (val result = manualAportacioRepository.addAportacioEnElManual(aportacio)) {
@@ -69,13 +90,5 @@ class AportacioService @Inject constructor(
         }
     }
 
-    suspend fun loadModelAndAportacions(manualId: String, modelId: String): Pair<org.opencv.dnn.Model?, List<AportacioUser>> {
-        return when (val result = manualAportacioRepository.loadModelAndAportacions(manualId, modelId)) {
-            is Result.Success -> result.data
-            is Result.Error -> {
-                Log.e("AportacioService", "Error carregant model i aportacions: ${result.message}")
-                Pair(null, emptyList())
-            }
-        }
-    }
+
 }

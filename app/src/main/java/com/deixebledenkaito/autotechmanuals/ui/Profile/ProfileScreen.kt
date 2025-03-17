@@ -1,9 +1,10 @@
 
 
 import android.net.Uri
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.Image
+
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -25,12 +26,16 @@ import androidx.compose.ui.unit.dp
 
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import coil.compose.rememberImagePainter
+import coil.compose.AsyncImage
+
 import com.deixebledenkaito.autotechmanuals.ui.Profile.ProfileViewModel
-import com.deixebledenkaito.autotechmanuals.ui.aportacions.CardAportacions.AportacioCard
+import com.deixebledenkaito.autotechmanuals.ui.aportacions.CardAportacions.AportacioPropiaCard
+
+
 import com.deixebledenkaito.autotechmanuals.ui.funcionsExternes.loadingDialog.LoadingDialog
 import com.deixebledenkaito.autotechmanuals.ui.home.ui.theme.BackgroundColor
 import com.deixebledenkaito.autotechmanuals.ui.home.ui.theme.title
+import com.google.firebase.auth.FirebaseAuth
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -41,9 +46,8 @@ fun ProfileScreen(
     navController: NavController
 ) {
     val user by viewModel.user.collectAsState()
-    val userAportacions by viewModel.userAportacions.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
-
+    val userAportacions by viewModel.userAportacions.collectAsState()
     // Estat per controlar si es mostra el diàleg de selecció d'imatge
     var showImagePickerDialog by remember { mutableStateOf(false) }
 
@@ -58,7 +62,9 @@ fun ProfileScreen(
 
     // Carrega les dades de l'usuari quan la pantalla es mostra
     LaunchedEffect(Unit) {
+        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
         viewModel.loadUser()
+        viewModel.loadUserAportacions(userId)
     }
 
     // Mostra el Dialog de càrrega si isLoading és true
@@ -73,8 +79,8 @@ fun ProfileScreen(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         // Imatge de perfil (si existeix)
                         user?.profileImageUrl?.let { imageUrl ->
-                            Image(
-                                painter = rememberImagePainter(imageUrl),
+                            AsyncImage(
+                                model = imageUrl, // URL de la imatge
                                 contentDescription = "Imatge de perfil",
                                 contentScale = ContentScale.FillBounds, // Evita que la imatge es talli
                                 modifier = Modifier
@@ -132,13 +138,20 @@ fun ProfileScreen(
         LazyColumn(
             modifier = Modifier
                 .padding(paddingValues)
-                .fillMaxSize()
+                .wrapContentHeight() // S'ajusta a l'alçada del contingut
                 .padding(16.dp)
         ) {
             items(userAportacions) { aportacio ->
-                AportacioCard(
+                AportacioPropiaCard(
                     aportacio = aportacio,
-                    onDelete = { viewModel.eliminarAportacio(aportacio) })
+                    onDelete = {
+                        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+                        viewModel.eliminarAportacio(userId, aportacio)
+                    },
+                    onClick = {
+                        navController.navigate("aportacioDetail/${aportacio.id}")
+                    }
+                )
                 Spacer(modifier = Modifier.height(8.dp))
             }
         }

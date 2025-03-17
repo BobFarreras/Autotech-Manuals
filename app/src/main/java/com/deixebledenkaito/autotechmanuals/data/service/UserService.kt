@@ -32,4 +32,5 @@ class UserService @Inject constructor(
     suspend fun updateUserProfileImage(userId:String, imageUrl: String): Boolean {
         return userRepository.updateUserProfileImage(userId,imageUrl)
     }
+
 }

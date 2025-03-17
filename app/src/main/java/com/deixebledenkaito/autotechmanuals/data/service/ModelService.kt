@@ -25,7 +25,10 @@ class ModelService @Inject constructor(
     }
 
     // Obtenir les aportacions d'un model
-    suspend fun getAportacionsForModel(manualId: String, modelId: String): Result<List<AportacioUser>> {
+    suspend fun getAportacionsForModel(
+        manualId: String,
+        modelId: String
+    ): Result<List<AportacioUser>> {
         return try {
             val aportacions = aportacioRepository.getAportacionsForModel(manualId, modelId)
             Result.Success(aportacions)
@@ -43,6 +46,23 @@ class ModelService @Inject constructor(
         }
 
     }
+    // Funció per donar like a una aportació
+    suspend fun donarLike(aportacioId: String, userId: String, manualId: String, modelId: String): Result<Unit> {
+        return try {
+            modelRepository.donarLike(aportacioId, userId, manualId, modelId)
+            Result.Success(Unit) // Retorna un Result.Success amb Unit
+        } catch (e: Exception) {
+            Result.Error("Error donant like: ${e.message}", AuthErrorType.UNKNOWN_ERROR, e)
+        }
+    }
 
-
+    // Funció per donar dislike a una aportació
+    suspend fun donarDislike(aportacioId: String, userId: String, manualId: String, modelId: String): Result<Unit> {
+        return try {
+            modelRepository.donarDislike(aportacioId, userId, manualId, modelId)
+            Result.Success(Unit) // Retorna un Result.Success amb Unit
+        } catch (e: Exception) {
+            Result.Error("Error donant dislike: ${e.message}", AuthErrorType.UNKNOWN_ERROR, e)
+        }
+    }
 }

@@ -18,14 +18,21 @@ class AportacioRepository @Inject constructor(
 ) {
     suspend fun getAportacionsByUser(userId: String): Result<List<AportacioUser>> {
         return try {
-            val aportacions = firestore.collection("usuaris")
+            val snapshot = firestore.collection("usuaris")
                 .document(userId)
                 .collection("aportacions")
                 .get()
                 .await()
-                .toObjects(AportacioUser::class.java)
+
+            // Log per veure les dades crues
+            snapshot.documents.forEach { document ->
+                Log.d("FirestoreData", "Document data: ${document.data}")
+            }
+
+            val aportacions = snapshot.toObjects(AportacioUser::class.java)
             Result.Success(aportacions)
         } catch (e: Exception) {
+            Log.e("FirestoreError", "Error obtenint aportacions: ${e.message}")
             Result.Error(e.message ?: "Error desconegut", AuthErrorType.INVALID_CODE)
         }
     }
@@ -36,7 +43,7 @@ class AportacioRepository @Inject constructor(
                 .document(userId)
                 .collection("aportacions")
                 .document(aportacio.id)
-                .set(aportacio)
+                .set(aportacio.toFirestore()) // Utilitzem toFirestore() per convertir l'objecte a un Map
                 .await()
             true
         } catch (e: Exception) {
@@ -69,4 +76,6 @@ class AportacioRepository @Inject constructor(
             .await()
             .toObjects(AportacioUser::class.java)
     }
+
+
 }

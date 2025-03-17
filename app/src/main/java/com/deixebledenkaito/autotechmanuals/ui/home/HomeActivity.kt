@@ -63,7 +63,7 @@ import com.deixebledenkaito.autotechmanuals.ui.dintreDelModel.buttons.btnErrors.
 import com.deixebledenkaito.autotechmanuals.ui.dintreDelModel.buttons.btnManuals.DescarregarManualsScreen
 import com.deixebledenkaito.autotechmanuals.ui.dintreDelModel.buttons.btnParametres.AjustListScreen
 import com.deixebledenkaito.autotechmanuals.ui.aportacions.NovaAportacioScreen
-import com.deixebledenkaito.autotechmanuals.ui.aportacions.aportacioCardDetail.AportacioCardDetailHome
+
 import com.deixebledenkaito.autotechmanuals.ui.funcionsExternes.autoMidesImg.CameraSizeDetectorApp
 import com.deixebledenkaito.autotechmanuals.ui.home.ui.theme.BackgroundColor
 import com.deixebledenkaito.autotechmanuals.ui.home.ui.theme.title
@@ -454,10 +454,7 @@ fun AppNavigation() {
             AjustListScreen()
         }
 
-        composable("aportacioDetailHome/{aportacioId}") { backStackEntry ->
-            val aportacioId = backStackEntry.arguments?.getString("aportacioId") ?: ""
-            AportacioCardDetailHome(aportacioId = aportacioId, navController = navController)
-        }
+
         composable("Coneccions") { backStackEntry ->
             ManualEcdriveConeccionsScreen()
         }

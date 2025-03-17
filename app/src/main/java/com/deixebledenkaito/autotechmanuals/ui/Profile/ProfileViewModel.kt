@@ -1,6 +1,7 @@
 package com.deixebledenkaito.autotechmanuals.ui.Profile
 
 import android.net.Uri
+import android.util.Log
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -38,6 +39,9 @@ class ProfileViewModel @Inject constructor(
     // Estat per als missatges d'error
     private val _errorMessage = MutableStateFlow<String?>(null)
 
+    // Estat per als errors
+    private val _error = MutableStateFlow<String?>(null)
+    val error: StateFlow<String?> get() = _error
 
     // Carrega les dades de l'usuari
     fun loadUser() {
@@ -55,20 +59,27 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
-    // Elimina una aportació
-    fun eliminarAportacio(aportacio: AportacioUser) {
+    // Funció per eliminar una aportació
+    fun eliminarAportacio(userId: String, aportacio: AportacioUser) {
         viewModelScope.launch {
-            val success = aportacioService.eliminarAportacio(
-                userId = auth.currentUser?.uid ?: "",
-                aportacio = aportacio
-            )
-
-            if (success) {
-                // Actualitza la llista d'aportacions a la UI
-                _userAportacions.value = _userAportacions.value.filter { it.id != aportacio.id }
+            _isLoading.value = true
+            _error.value = null
+            try {
+                val eliminada = aportacioService.eliminarAportacio(userId, aportacio)
+                if (eliminada) {
+                    // Actualitza la llista d'aportacions després de l'eliminació
+                    loadUserAportacions(userId)
+                } else {
+                    _error.value = "Error eliminant l'aportació"
+                }
+            } catch (e: Exception) {
+                _error.value = "Error eliminant l'aportació: ${e.message}"
+            } finally {
+                _isLoading.value = false
             }
         }
     }
+
 
     // Actualitza la imatge de perfil
     fun updateProfileImage(imageUri: Uri) {
@@ -101,6 +112,21 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
-
+    // Carrega les aportacions de l'usuari
+    fun loadUserAportacions(userId: String) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            _error.value = null
+            try {
+                val aportacions = aportacioService.getAportacionsByUser(userId)
+                Log.d("AportacioRepository", "Aportacions carregades: ${aportacions.size}")
+                _userAportacions.value = aportacions
+            } catch (e: Exception) {
+                _error.value = "Error inesperat: ${e.message}"
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
 
 }
