@@ -52,16 +52,16 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import coil.compose.AsyncImage
+
 import coil.compose.rememberImagePainter
 import com.deixebledenkaito.autotechmanuals.domain.Model
 import com.deixebledenkaito.autotechmanuals.domain.RutaGuardada
 import com.deixebledenkaito.autotechmanuals.ui.aportacions.CardAportacions.AportacioAltresUsuarisCard
-import com.deixebledenkaito.autotechmanuals.ui.aportacions.CardAportacions.AportacioPropiaCard
+
 import com.deixebledenkaito.autotechmanuals.ui.funcionsExternes.loadingDialog.MessageDialog
 import com.deixebledenkaito.autotechmanuals.ui.funcionsExternes.saveRouteButton.SaveRouteButton
 import com.deixebledenkaito.autotechmanuals.ui.funcionsExternes.sharedViewModel.SharedViewModel
-import com.google.firebase.auth.FirebaseAuth
+
 import java.util.UUID
 
 //AIXO ES DINTRE EL MODEL AMB ELS BOTONS I LES APORTACIONS
@@ -72,7 +72,8 @@ fun ModelDetailScreen(
     modelId: String,
     navController: NavController,
     viewModel: ModelDetailViewModel = hiltViewModel() ,
-    sharedViewModel: SharedViewModel = hiltViewModel()
+    sharedViewModel: SharedViewModel = hiltViewModel(),
+
 ) {
 
     // Observar l'estat del ViewModel
@@ -80,6 +81,8 @@ fun ModelDetailScreen(
     val aportacions by viewModel.aportacions.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val error by viewModel.error.collectAsState()
+
+
 
     val showMessageDialog by sharedViewModel.showMessageDialog.collectAsState()
     val messageDialogText by sharedViewModel.messageDialogText.collectAsState()

@@ -2,6 +2,7 @@
 
 import android.net.Uri
 import android.util.Log
+
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 
@@ -29,7 +30,9 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 
 import com.deixebledenkaito.autotechmanuals.ui.Profile.ProfileViewModel
+import com.deixebledenkaito.autotechmanuals.ui.aportacions.AportacioData
 import com.deixebledenkaito.autotechmanuals.ui.aportacions.CardAportacions.AportacioPropiaCard
+
 
 
 import com.deixebledenkaito.autotechmanuals.ui.funcionsExternes.loadingDialog.LoadingDialog
@@ -50,12 +53,14 @@ fun ProfileScreen(
     val userAportacions by viewModel.userAportacions.collectAsState()
     // Estat per controlar si es mostra el diàleg de selecció d'imatge
     var showImagePickerDialog by remember { mutableStateOf(false) }
+    var loadingMessage by remember { mutableStateOf("") } // Variable d'estat per al missatge de càrrega
 
     // Launcher per obrir la galeria
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
         uri?.let { selectedImageUri ->
+            loadingMessage = "Guardant l'imatge de perfil..." // Actualitza el missatge de càrrega
             viewModel.updateProfileImage(selectedImageUri)
         }
     }
@@ -63,14 +68,16 @@ fun ProfileScreen(
     // Carrega les dades de l'usuari quan la pantalla es mostra
     LaunchedEffect(Unit) {
         val userId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
-        viewModel.loadUser()
-        viewModel.loadUserAportacions(userId)
-    }
+        viewModel.loadUser() // Carrega les dades de l'usuari
+        viewModel.loadUserAportacions(userId) // Carrega les aportacions de l'usuari
 
+    }
+    Log.d("AportacioData", "${AportacioData.aportacions}")
     // Mostra el Dialog de càrrega si isLoading és true
     if (isLoading) {
-        LoadingDialog(isLoading = isLoading, message = "Guardant imatge de perfil...")
+        LoadingDialog(isLoading = isLoading, message = loadingMessage)
     }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -145,11 +152,12 @@ fun ProfileScreen(
                 AportacioPropiaCard(
                     aportacio = aportacio,
                     onDelete = {
+                        loadingMessage = "Eliminant aportació..." // Actualitza el missatge de càrrega
                         val userId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
                         viewModel.eliminarAportacio(userId, aportacio)
                     },
                     onClick = {
-                        navController.navigate("aportacioDetail/${aportacio.id}")
+                        navController.navigate("aportacioDetail/${aportacio.id}/${aportacio.manual}/${aportacio.model}")
                     }
                 )
                 Spacer(modifier = Modifier.height(8.dp))

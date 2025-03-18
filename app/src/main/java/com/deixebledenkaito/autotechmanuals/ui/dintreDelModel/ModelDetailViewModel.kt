@@ -21,9 +21,7 @@ import javax.inject.Inject
 class ModelDetailViewModel @Inject constructor(
     private val modelService: ModelService,
     private val userService: UserService,
-
-
-) : ViewModel() {
+    ) : ViewModel() {
 
     // Estat per al model
     private val _model = MutableStateFlow<Model?>(null)

@@ -11,6 +11,7 @@ import com.deixebledenkaito.autotechmanuals.data.service.AportacioService
 import com.deixebledenkaito.autotechmanuals.data.service.UserService
 import com.deixebledenkaito.autotechmanuals.domain.AportacioUser
 import com.deixebledenkaito.autotechmanuals.domain.User
+import com.deixebledenkaito.autotechmanuals.ui.aportacions.AportacioData
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -121,6 +122,7 @@ class ProfileViewModel @Inject constructor(
                 val aportacions = aportacioService.getAportacionsByUser(userId)
                 Log.d("AportacioRepository", "Aportacions carregades: ${aportacions.size}")
                 _userAportacions.value = aportacions
+                AportacioData.aportacions = aportacions // Guarda les dades a l'objecte global
             } catch (e: Exception) {
                 _error.value = "Error inesperat: ${e.message}"
             } finally {

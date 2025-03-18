@@ -58,6 +58,7 @@ import coil.compose.AsyncImage
 import com.deixebledenkaito.autotechmanuals.R
 import com.deixebledenkaito.autotechmanuals.domain.Manuals
 import com.deixebledenkaito.autotechmanuals.domain.RutaGuardada
+import com.deixebledenkaito.autotechmanuals.ui.aportacions.AportacioDetailScreen
 import com.deixebledenkaito.autotechmanuals.ui.dintreDelModel.ModelDetailScreen
 import com.deixebledenkaito.autotechmanuals.ui.dintreDelModel.buttons.btnErrors.ErrorsDelModelScreen
 import com.deixebledenkaito.autotechmanuals.ui.dintreDelModel.buttons.btnManuals.DescarregarManualsScreen
@@ -70,6 +71,7 @@ import com.deixebledenkaito.autotechmanuals.ui.home.ui.theme.title
 import com.deixebledenkaito.autotechmanuals.ui.homeManuals.HomeManualScreen
 import com.deixebledenkaito.autotechmanuals.ui.auth.login.LoginScreen
 import com.deixebledenkaito.autotechmanuals.ui.auth.login.LoginViewModel
+import com.deixebledenkaito.autotechmanuals.ui.dintreDelModel.ModelDetailViewModel
 import com.deixebledenkaito.autotechmanuals.ui.dintreDelModel.buttons.btnCarpinteria.CarpinteriaScreen
 import com.deixebledenkaito.autotechmanuals.ui.dintreDelModel.buttons.btnCarpinteria.ESGScreen
 import com.deixebledenkaito.autotechmanuals.ui.dintreDelModel.buttons.btnConeccions.ManualEcdriveConeccionsScreen
@@ -393,7 +395,7 @@ fun AppNavigation() {
     val navController = rememberNavController()
     val viewModel: HomeViewModel = viewModel()
     val loginViewModel: LoginViewModel = viewModel()
-
+    val modelDetailViewModel : ModelDetailViewModel = viewModel()
     NavHost(navController = navController, startDestination = "home") {
         composable("home") {
             HomeScreen(viewModel = viewModel, navController = navController)
@@ -486,6 +488,17 @@ fun AppNavigation() {
             CalculScreen(navController = navController, cardType = cardType)
         }
 
+        composable("aportacioDetail/{aportacioId}/{manualId}/{modelId}") { backStackEntry ->
+            val aportacioId = backStackEntry.arguments?.getString("aportacioId") ?: ""
+            val manualId = backStackEntry.arguments?.getString("manualId") ?: ""
+            val modelId = backStackEntry.arguments?.getString("modelId") ?: ""
+            AportacioDetailScreen(
+                aportacioId,
+                navController = navController,
+                onLike = { modelDetailViewModel.likeAportacio(aportacioId, manualId, modelId) }, // Passa la funció de like
+                onDislike = { modelDetailViewModel.dislikeAportacio(aportacioId, manualId, modelId) }, // Passa la funció de dislike)
+            )
+        }
     }
 }
 
