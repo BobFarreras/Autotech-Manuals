@@ -59,6 +59,7 @@ import com.deixebledenkaito.autotechmanuals.R
 import com.deixebledenkaito.autotechmanuals.ui.funcionsExternes.videoPlayer.VideoPlayer
 
 @OptIn(ExperimentalMaterial3Api::class)
+
 @Composable
 fun AportacioDetailScreen(
     aportacioId: String,
@@ -155,7 +156,7 @@ fun AportacioDetailScreen(
                 )
 
                 // Imatges
-                if (aportacio.imageVideos.any { true }) {
+                if (aportacio.imatgesUrl.isNotEmpty()) {
                     Text(
                         text = "Imatges",
                         style = MaterialTheme.typography.titleMedium,
@@ -167,10 +168,10 @@ fun AportacioDetailScreen(
                             .height(200.dp)
                             .padding(horizontal = 16.dp)
                     ) {
-                        items(aportacio.imageVideos.filter { true }) { imageVideo ->
+                        items(aportacio.imatgesUrl) { imageUrl ->
                             var showFullScreenImage by remember { mutableStateOf(false) }
                             AsyncImage(
-                                model = imageVideo.imageUrl,
+                                model = imageUrl,
                                 contentDescription = "Imatge",
                                 modifier = Modifier
                                     .width(200.dp)
@@ -191,7 +192,7 @@ fun AportacioDetailScreen(
                                             .background(Color.Black)
                                     ) {
                                         AsyncImage(
-                                            model = imageVideo.imageUrl,
+                                            model = imageUrl,
                                             contentDescription = "Imatge a pantalla completa",
                                             modifier = Modifier.fillMaxSize(),
                                             contentScale = ContentScale.Fit
@@ -204,7 +205,7 @@ fun AportacioDetailScreen(
                 }
 
                 // Vídeos
-                if (aportacio.imageVideos.any { it.videoUrl != null }) {
+                if (aportacio.videosUrl.isNotEmpty()) {
                     Text(
                         text = "Vídeos",
                         style = MaterialTheme.typography.titleMedium,
@@ -216,7 +217,7 @@ fun AportacioDetailScreen(
                             .height(200.dp)
                             .padding(horizontal = 16.dp)
                     ) {
-                        items(aportacio.imageVideos.filter { it.videoUrl != null }) { imageVideo ->
+                        items(aportacio.videosUrl) { videoUrl ->
                             var showFullScreenVideo by remember { mutableStateOf(false) }
                             Box(
                                 modifier = Modifier
@@ -227,7 +228,7 @@ fun AportacioDetailScreen(
                                     .clickable { showFullScreenVideo = true }
                             ) {
                                 VideoPlayer(
-                                    videoUrl = imageVideo.videoUrl.toString(),
+                                    videoUrl = videoUrl,
                                     modifier = Modifier.fillMaxSize()
                                 )
                             }
@@ -242,7 +243,7 @@ fun AportacioDetailScreen(
                                             .background(Color.Black)
                                     ) {
                                         VideoPlayer(
-                                            videoUrl = imageVideo.videoUrl.toString(),
+                                            videoUrl = videoUrl,
                                             modifier = Modifier.fillMaxSize(),
                                             isFullScreen = true, // Afegir aquesta propietat al teu VideoPlayer
                                             autoPlay = true // Reprodueix automàticament

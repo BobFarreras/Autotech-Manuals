@@ -45,18 +45,21 @@ class AportacioService @Inject constructor(
         }
     }
 
+    // Pujar fitxers i generar miniatures per als vídeos
     suspend fun pujarFitxersIGenerarMiniatures(
         context: Context,
         fitxers: List<Uri>,
         userId: String,
         aportacioId: String,
-        tipus: String
-    ): List<ImageVideo> {
-        return storageRepository.pujarFitxersIGenerarMiniatures(context, fitxers, userId, aportacioId, tipus)
+        tipus: String,
+        onProgress: (Float) -> Unit // Callback per informar del progrés
+    ): List<String> {
+        return storageRepository.pujarFitxersIGenerarMiniatures(
+            context, fitxers, userId, aportacioId, tipus, onProgress
+        )
     }
 
-
-    suspend fun addAportacioEnElManual(aportacio: AportacioUser): Boolean {
+    private suspend fun addAportacioEnElManual(aportacio: AportacioUser): Boolean {
         return when (val result = manualAportacioRepository.addAportacioEnElManual(aportacio)) {
             is Result.Success -> result.data
             is Result.Error -> {

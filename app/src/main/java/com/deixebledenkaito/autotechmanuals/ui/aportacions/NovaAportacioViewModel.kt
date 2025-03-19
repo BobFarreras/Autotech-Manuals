@@ -60,6 +60,7 @@ class NovaAportacioViewModel @Inject constructor(
     // Estat per al progrés de pujada
     private val _uploadProgress = MutableStateFlow(0f)
     val uploadProgress: StateFlow<Float> get() = _uploadProgress
+
     init {
         Log.d("NovaAportacioViewModel", "Inicialitzant ViewModel i carregant manuals")
         carregarManuals()
@@ -70,6 +71,11 @@ class NovaAportacioViewModel @Inject constructor(
         return title.replace("/", "_")
             .replace(" ", "_")
             .replace("[^a-zA-Z0-9_.-]".toRegex(), "_")
+    }
+
+    // Funció per actualitzar el progrés
+    private fun updateUploadProgress(progress: Float) {
+        _uploadProgress.value = progress
     }
 
     // Carrega tots els manuals
@@ -84,9 +90,13 @@ class NovaAportacioViewModel @Inject constructor(
                         _manuals.value = result.data
                         Log.d("NovaAportacioViewModel", "Manuals carregats: ${result.data.size}")
                     }
+
                     is Result.Error -> {
                         _notificacio.value = "Error carregant manuals: ${result.message}"
-                        Log.e("NovaAportacioViewModel", "Error carregant manuals: ${result.message}")
+                        Log.e(
+                            "NovaAportacioViewModel",
+                            "Error carregant manuals: ${result.message}"
+                        )
                     }
                 }
             } catch (e: Exception) {
@@ -110,6 +120,7 @@ class NovaAportacioViewModel @Inject constructor(
                         _models.value = result.data
                         Log.d("NovaAportacioViewModel", "Models carregats: ${result.data.size}")
                     }
+
                     is Result.Error -> {
                         _notificacio.value = "Error carregant models: ${result.message}"
                         Log.e("NovaAportacioViewModel", "Error carregant models: ${result.message}")
@@ -123,6 +134,7 @@ class NovaAportacioViewModel @Inject constructor(
             }
         }
     }
+
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     // Funció no suspendida que llança una coroutine
@@ -149,10 +161,12 @@ class NovaAportacioViewModel @Inject constructor(
             )
         }
     }
+
     override fun onCleared() {
         super.onCleared()
         scope.cancel() // Cancel·la totes les coroutines quan el ViewModel es destrueix
     }
+
     // Guarda una nova aportació
     private suspend fun guardarAportacioInternal(
         context: Context,
@@ -181,10 +195,14 @@ class NovaAportacioViewModel @Inject constructor(
                 Log.d("NovaAportacioViewModel", "Dades de l'usuari obtingudes: ${result.data}")
                 result.data
             }
+
             is Result.Error -> {
                 _notificacio.value = "Error obtenint dades de l'usuari: ${result.message}"
                 _isLoading.value = false
-                Log.e("NovaAportacioViewModel", "Error obtenint dades de l'usuari: ${result.message}")
+                Log.e(
+                    "NovaAportacioViewModel",
+                    "Error obtenint dades de l'usuari: ${result.message}"
+                )
                 return
             }
         }
@@ -204,29 +222,41 @@ class NovaAportacioViewModel @Inject constructor(
 
         try {
             // Pujar imatges, PDFs i vídeos en paral·lel
-            val (imageVideos, pdfVideos, videoVideos) = coroutineScope {
-                val imagesDeferred = async {
+            val (imatgesUrl, pdfsUrl, videosUrl) = coroutineScope {
+                val imatgesDeferred = async {
                     aportacioService.pujarFitxersIGenerarMiniatures(
                         context, imatges, userId, aportacioId, "imatges"
-                    )
+                    ){ progress ->
+                        // Actualitzar el progrés global (40% per imatges)
+                        updateUploadProgress(progress * 0.4f)
+                    }
                 }
                 val pdfsDeferred = async {
                     aportacioService.pujarFitxersIGenerarMiniatures(
                         context, pdfUris, userId, aportacioId, "pdfs"
-                    )
+                    ){ progress ->
+                        // Actualitzar el progrés global (10% per PDFs)
+                        updateUploadProgress(0.4f + progress * 0.1f)
+                    }
                 }
                 val videosDeferred = async {
                     aportacioService.pujarFitxersIGenerarMiniatures(
                         context, videoUris, userId, aportacioId, "videos"
-                    )
+                    ){ progress ->
+                        // Actualitzar el progrés global (40% per vídeos)
+                        updateUploadProgress(0.5f + progress * 0.4f)
+                    }
                 }
 
-                Triple(imagesDeferred.await(), pdfsDeferred.await(), videosDeferred.await())
+                Triple(
+                    imatgesDeferred.await(),
+                    pdfsDeferred.await(),
+                    videosDeferred.await()
+                )
             }
 
-            // Combinar totes les URLs
-            val totesLesUrls = imageVideos + pdfVideos + videoVideos
-            Log.d("NovaAportacioViewModel", "Total d'URLs combinades: ${totesLesUrls.size}")
+            // Les miniatures s'han generat automàticament quan es pugen vídeos
+            val miniaturesUrl = videosUrl // Les miniatures són el resultat de pujar vídeos
 
             // Crear l'objecte AportacioUser amb totes les dades
             val aportacio = AportacioUser(
@@ -235,11 +265,13 @@ class NovaAportacioViewModel @Inject constructor(
                 manual = manual ?: "",
                 title = title,
                 descripcio = descripcio,
-                imageVideos = totesLesUrls,
+                imatgesUrl = imatgesUrl,
+                pdfUrls = pdfsUrl.joinToString(","),
+                videosUrl = videosUrl,
+                miniaturesUrl = miniaturesUrl,
                 likes = 0,
                 noLikes = 0,
                 usageCount = 0,
-                pdfUrls = pdfVideos.joinToString(",") { it.imageUrl },
                 data = data,
                 hora = hora,
                 user = userId,
@@ -247,26 +279,23 @@ class NovaAportacioViewModel @Inject constructor(
                 usersWhoLiked = mutableListOf(),
                 usersWhoDisliked = mutableListOf()
             )
-            Log.d("NovaAportacioViewModel", "Aportació creada: $aportacio")
 
+            // Guardar l'aportació a Firestore (10% del progrés total)
+            updateUploadProgress(0.9f) // 90% completat abans de guardar a Firestore
             // Guardar l'aportació a Firestore
             when (val result = aportacioService.addAportacio(aportacio)) {
                 is Result.Success -> {
                     _notificacio.value = "Aportació guardada correctament"
-                    Log.d("NovaAportacioViewModel", "Aportació guardada correctament")
+                    updateUploadProgress(1f) // 100% completat
                 }
-                is Result.Error -> {
-                    _notificacio.value = "Error guardant l'aportació: ${result.message}"
-                    Log.e("NovaAportacioViewModel", "Error guardant l'aportació: ${result.message}")
-                }
+                is Result.Error -> _notificacio.value =
+                    "Error guardant l'aportació: ${result.message}"
             }
         } catch (e: Exception) {
             _notificacio.value = "Error inesperat: ${e.message}"
-            Log.e("NovaAportacioViewModel", "Error inesperat: ${e.message}")
         } finally {
             _isLoading.value = false
+            _uploadProgress.value = 0f // Reiniciar el progrés
         }
     }
-
-
 }

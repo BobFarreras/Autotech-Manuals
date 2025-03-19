@@ -64,6 +64,7 @@ import androidx.navigation.NavController
 import coil.compose.rememberImagePainter
 import com.deixebledenkaito.autotechmanuals.R
 import com.deixebledenkaito.autotechmanuals.ui.Profile.SeleccionarImatgeDialog
+import com.deixebledenkaito.autotechmanuals.ui.funcionsExternes.loadingDialog.UploadProgressCard
 import com.deixebledenkaito.autotechmanuals.ui.funcionsExternes.videoPlayer.VideoPlayer
 
 import java.io.File
@@ -122,10 +123,13 @@ fun NovaAportacioScreen(
 
     // Escoltar canvis en la notificació del ViewModel
     val notificacio by viewModel.notificacio.collectAsState()
+
     LaunchedEffect(notificacio) {
         if (notificacio.isNotEmpty()) {
             snackbarHostState.showSnackbar(notificacio)
-            navController.popBackStack() // Tornar a la pantalla anterior
+            navController.navigate("profile") { // Tornar a la pantalla de Profile
+                popUpTo("novaAportacio") { inclusive = true } // Eliminar la pantalla actual de l'stack
+            }
         }
     }
 
@@ -457,10 +461,11 @@ fun NovaAportacioScreen(
 
             // Mostrar l'indicador de càrrega
             if (isLoading) {
-                CircularProgressIndicator(
+                UploadProgressCard(
+                    uploadProgress = uploadProgress,
                     modifier = Modifier
                         .align(Alignment.Center)
-                        .size(48.dp)
+                        .padding(16.dp)
                 )
             }
 

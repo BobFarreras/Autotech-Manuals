@@ -1,15 +1,14 @@
 package com.deixebledenkaito.autotechmanuals.domain
 
-
-
-
 data class AportacioUser(
     val id: String = "",
     val model: String = "",
     val manual: String = "",
     val title: String = "",
     val descripcio: String = "",
-    val imageVideos: List<ImageVideo> = emptyList(), // Llista d'imatges i vídeos
+    val imatgesUrl: List<String> = emptyList(), // Llista d'URLs d'imatges
+    val videosUrl: List<String> = emptyList(), // Llista d'URLs de vídeos
+    val miniaturesUrl: List<String> = emptyList(), // Llista d'URLs de miniatures
     var likes: Int = 0,
     var noLikes: Int = 0,
     val usageCount: Long = 0,
@@ -18,12 +17,9 @@ data class AportacioUser(
     val hora: String = "",
     val user: String = "",
     val userName: String = "",
-    var usersWhoLiked: MutableList<String> = mutableListOf(), // Canvia a MutableList
-    var usersWhoDisliked: MutableList<String> = mutableListOf()// Canvia a MutableList
-
-){
-
-
+    var usersWhoLiked: MutableList<String> = mutableListOf(),
+    var usersWhoDisliked: MutableList<String> = mutableListOf()
+) {
     fun toFirestore(): Map<String, Any> {
         return mapOf(
             "id" to id,
@@ -31,18 +27,19 @@ data class AportacioUser(
             "manual" to manual,
             "title" to title,
             "descripcio" to descripcio,
-            "imageVideos" to imageVideos, // Guardem totes les URLs de les imatges
+            "imatgesUrl" to imatgesUrl,
+            "videosUrl" to videosUrl,
+            "miniaturesUrl" to miniaturesUrl,
             "likes" to likes,
             "noLikes" to noLikes,
             "usageCount" to usageCount,
-            "pdfUrls" to (pdfUrls ?: ""), // Guarda una cadena buida si pdfUrl és null
+            "pdfUrls" to (pdfUrls ?: ""),
             "data" to data,
             "hora" to hora,
             "user" to user,
-            "userName" to userName, // Afegim el nom de l'usuari
+            "userName" to userName,
             "usersWhoLiked" to usersWhoLiked,
             "usersWhoDisliked" to usersWhoDisliked
-
         )
     }
 }

@@ -9,7 +9,9 @@ data class AportacioResponse(
     val manual: String,
     val title: String,
     val descripcio: String,
-    val imageVideos: List<ImageVideo> = emptyList(), // Llista d'imatges i vídeos
+    val imatgesUrl: List<String> = emptyList(), // Llista d'URLs d'imatges
+    val videosUrl: List<String> = emptyList(), // Llista d'URLs de vídeos
+    val miniaturesUrl: List<String> = emptyList(), // Llista d'URLs de miniatures
     val likes: Int,
     val noLikes: Int,
     val usageCount: Long,
@@ -28,7 +30,9 @@ data class AportacioResponse(
             manual = manual,
             title = title,
             descripcio = descripcio,
-            imageVideos = imageVideos, // Nou camp per a imatges i vídeos
+            imatgesUrl = imatgesUrl,
+            videosUrl = videosUrl,
+            miniaturesUrl = miniaturesUrl,
             likes = likes,
             noLikes = noLikes,
             usageCount = usageCount,

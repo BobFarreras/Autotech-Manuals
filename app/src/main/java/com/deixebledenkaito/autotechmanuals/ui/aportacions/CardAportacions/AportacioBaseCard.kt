@@ -1,6 +1,7 @@
 package com.deixebledenkaito.autotechmanuals.ui.aportacions.CardAportacions
 
 
+import android.util.Log
 import androidx.compose.foundation.Image
 
 import androidx.compose.foundation.clickable
@@ -91,19 +92,19 @@ fun AportacioBaseCard(
                 overflow = TextOverflow.Ellipsis
             )
             Spacer(modifier = Modifier.height(8.dp))
-
-            // Imatges i vídeos (si n'hi ha)
-            if (aportacio.imageVideos.isNotEmpty() || !aportacio.pdfUrls.isNullOrEmpty()) {
+            Log.d("Miniatures", "${aportacio.miniaturesUrl}")
+            // Imatges i miniatures (si n'hi ha)
+            if (aportacio.imatgesUrl.isNotEmpty() || aportacio.miniaturesUrl.isNotEmpty()) {
                 LazyRow(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(100.dp) // Alçada fixa per a tots els elements
                 ) {
-                    // Afegir imatges i miniatures de vídeos
-                    items(aportacio.imageVideos) { imageVideo ->
+                    // Afegir imatges
+                    items(aportacio.imatgesUrl) { imageUrl ->
                         AsyncImage(
-                            model = imageVideo.imageUrl,
-                            contentDescription = "Imatge o miniatura del vídeo",
+                            model = imageUrl,
+                            contentDescription = "Imatge de l'aportació",
                             modifier = Modifier
                                 .width(100.dp)
                                 .height(100.dp)
@@ -112,6 +113,22 @@ fun AportacioBaseCard(
                             contentScale = ContentScale.Crop
                         )
                     }
+
+                    // Afegir miniatures (captures de vídeos)
+                    items(aportacio.miniaturesUrl) { thumbnailUrl ->
+                        AsyncImage(
+                            model = thumbnailUrl,
+                            contentDescription = "Miniatura de vídeo",
+                            modifier = Modifier
+                                .width(100.dp)
+                                .height(100.dp)
+                                .padding(end = 6.dp)
+                                .clip(MaterialTheme.shapes.medium),
+                            contentScale = ContentScale.Crop
+                        )
+                    }
+
+
 
                     // Afegir PDFs
                     items(aportacio.pdfUrls?.split(",") ?: emptyList()) { pdfUrl ->
